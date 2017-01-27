@@ -1,5 +1,8 @@
 #!/bin/bash
 
-time g++ -std=c++17 main.cpp -o main_normal
+CXX_STD="c++17"
+CXX_FLAGS="-std=$${CXX_STD}"
 
-time strace -f -e open -o main-compile.strace g++ -std=c++17 main.cpp -o main_strace
+time g++ ${CXX_FLAGS} main.cpp -o main_normal
+
+time strace -f -e open -o main-compile.strace g++ ${CXX_FLAGS} main.cpp -o main_strace
