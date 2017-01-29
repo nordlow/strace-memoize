@@ -44,8 +44,6 @@ def memoizedRun(args, trace_childs=True):
         sys_calls_flags = ['-e', 'trace=' + ','.join(SYS_CALLS + SYS_CALLS_AT)]
         strace_args = ['strace'] + strace_flags + outfile_flags + sys_calls_flags + args
 
-        print("strace_args:", strace_args)
-
         ret = subprocess.run(args=strace_args, shell=False)
 
         out_file.seek(0)              # reset it
@@ -72,8 +70,8 @@ def memoizedRun(args, trace_childs=True):
                         files_open.add(syscall_fname)
                     elif syscall == b'access':
                         files_access.add(syscall_fname)
-                    # else:
-                    #     assert(False, 'Handle system call' + bytes.decode(syscall))
+                    else:
+                        print('Handle system call' + syscall_s)
 
                     # print(pid, syscall_s, syscall_fname)
 
