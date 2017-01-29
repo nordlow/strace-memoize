@@ -85,11 +85,17 @@ def memoizedRun(args, trace_childs=True):
         print('open():')
         for fname in sorted(fnames_open, reverse=True):
             if fname != b'/dev/urandom' and not fname.startswith(b'/tmp'): # if not a temp file
+
+                mtime = os.path.getmtime(fname)
+
                 cdata = open(fname, 'rb').read()
-                chash = ' ' + HASH_NAME + "=" + hashlib.new(HASH_NAME, cdata).hexdigest()
+                chash = hashlib.new(HASH_NAME, cdata)
+
+                chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
+
+                print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
             else:
-                chash = ''
-            print('  - "' + bytes.decode(fname) + '"' + chash)
+                print('  - "' + bytes.decode(fname) + '"')
 
         print('access():')
         for file_access in sorted(fnames_access, reverse=True):
