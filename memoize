@@ -23,16 +23,16 @@ SYS_CALLS = ["open", "openat", "stat", "stat64", "statfs", "access"]
 SYS_CALLS_AT = ["openat"]       # Linux
 
 # content hashing algorithm
-HASH_NAME = 'sha1'
+HASH_NAME = 'md5'
 
 RELEVANT_DIRS = ['.']
 
 
 def memoizedRun(args, trace_childs=True):
 
-    files_open = set()
-    files_stat = set()
-    files_access = set()
+    fnames_open = set()
+    fnames_stat = set()
+    fnames_access = set()
 
     with tempfile.NamedTemporaryFile() as out_file:
 
@@ -65,11 +65,11 @@ def memoizedRun(args, trace_childs=True):
 
                     # in decreasing probability
                     if syscall == b'stat':
-                        files_stat.add(syscall_fname)
+                        fnames_stat.add(syscall_fname)
                     elif syscall == b'open':
-                        files_open.add(syscall_fname)
+                        fnames_open.add(syscall_fname)
                     elif syscall == b'access':
-                        files_access.add(syscall_fname)
+                        fnames_access.add(syscall_fname)
                     else:
                         print('Handle system call' + syscall_s)
 
@@ -79,16 +79,21 @@ def memoizedRun(args, trace_childs=True):
                     pass
 
         print('stat():')
-        for file_stat in sorted(files_stat):
-            print("  - " + bytes.decode(file_stat))
+        for fname in sorted(fnames_stat, reverse=True):
+            print('  - "' + bytes.decode(fname) + '"')
 
         print('open():')
-        for file_open in sorted(files_open):
-            print("  - " + bytes.decode(file_open))
+        for fname in sorted(fnames_open, reverse=True):
+            if fname != b'/dev/urandom' and not fname.startswith(b'/tmp'): # if not a temp file
+                cdata = open(fname, 'rb').read()
+                chash = ' ' + HASH_NAME + "=" + hashlib.new(HASH_NAME, cdata).hexdigest()
+            else:
+                chash = ''
+            print('  - "' + bytes.decode(fname) + '"' + chash)
 
         print('access():')
-        for file_access in sorted(files_access):
-            print("  - " + bytes.decode(file_access))
+        for file_access in sorted(fnames_access, reverse=True):
+            print('  - "' + bytes.decode(file_access) + '"')
 
         return ret
 
