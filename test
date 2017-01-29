@@ -1,5 +1,0 @@
-#!/bin/bash
-
-time g++ -std=c++17 main.cpp -o main_normal
-
-time strace -f -e open -o main-compile.strace g++ -std=c++17 main.cpp -o main_strace
