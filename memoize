@@ -14,7 +14,7 @@ import json
 from pprint import pprint as pp
 from getopt import getopt
 
-from dbgio import dln
+# from dbgio import dln
 
 # if set use modification time instead of content-hash as indentity
 OPT_USE_MODTIME = False
