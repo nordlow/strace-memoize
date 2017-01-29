@@ -29,7 +29,7 @@ RELEVANT_DIRS = ['.']
 
 
 def _is_hashable_file_name(fname):
-    return fname != b'/dev/urandom' and not fname.startswith(b'/tmp')
+    return fname != b'/dev/urandom' and os.path.exists(fname)
 
 
 def memoized_run(args, trace_childs=True):
@@ -84,8 +84,7 @@ def memoized_run(args, trace_childs=True):
 
         print('stat():')
         for fname in sorted(fnames_stat, reverse=True):
-            if _is_hashable_file_name(fname): # if not a temp file
-                print('  - "' + bytes.decode(fname) + '"')
+            print('  - "' + bytes.decode(fname) + '"')
 
         print('open():')
         for fname in sorted(fnames_open, reverse=True):
@@ -104,8 +103,7 @@ def memoized_run(args, trace_childs=True):
 
         print('access():')
         for fname in sorted(fnames_access, reverse=True):
-            if _is_hashable_file_name(fname): # if not a temp file
-                print('  - "' + bytes.decode(fname) + '"')
+            print('  - "' + bytes.decode(fname) + '"')
 
         return ret
 
