@@ -83,17 +83,19 @@ def process_strace_output(output):
     status = 0
     files = []
     files_set = set();
-    files_dict = {}
+
     for line in output:
         line_str = str(line)
+
         match = (re.match(RX, line_str))
         if match:
+
             fname = os.path.normpath(match.group(1))
             if (is_relevant_file(fname) and
                 os.path.isfile(fname)
-                and not files_dict.has_key(fname)):
+                and not fname in files_set):
+
                 files.append((fname, hashsum(fname), modtime(fname)))
-                files_dict[fname] = True
                 files_set.add(fname)
 
         match = re.match(r'.*exit_group\((.*)\).*', line_str)
