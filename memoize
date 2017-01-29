@@ -27,8 +27,16 @@ HASH_NAME = 'sha1'
 
 RELEVANT_DIRS = ['.']
 
+STRACE_FLAGS = ['-f']
+
 
 def memoizedRun(args):
+
+    strace_args = ['strace'] + STRACE_FLAGS + args
+
+    # https://docs.python.org/3.6/library/subprocess.html#subprocess.run
+    return subprocess.run(strace_args)
+
     print("args:", args)
 
 
@@ -43,4 +51,5 @@ if __name__ == '__main__':
             RELEVANT_DIRS.append(value)
 
     status = memoizedRun(args)
+    print(type(status))
     sys.exit(status)
