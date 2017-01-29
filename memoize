@@ -2,11 +2,14 @@
 
 import sys
 import os
+import subprocess
 import os.path
 import re
 import hashlib
 import tempfile
-import pickle                   # cPickle no available in Python3
+import pickle                   # cPickle not available in Python3
+
+import json
 
 from pprint import pprint as pp
 from getopt import getopt
@@ -22,14 +25,16 @@ SYS_CALLS_AT = ["openat"]       # Linux
 # content hashing algorithm
 HASH_NAME = 'sha1'
 
-def memoize(cmd):
-    print("cmd:", cmd)
+RELEVANT_DIRS = ['.']
+
+
+def memoizedRun(args):
+    print("args:", args)
 
 
 if __name__ == '__main__':
 
-    (opts, cmd) = getopt(sys.argv[1:], 'td:')
-    cmd = ' '.join(cmd)
+    (opts, args) = getopt(sys.argv[1:], 'td:')
 
     for (opt, value) in opts:
         if opt == '-t':
@@ -37,5 +42,5 @@ if __name__ == '__main__':
         elif opt == '-d':
             RELEVANT_DIRS.append(value)
 
-    status = memoize(cmd)
+    status = memoizedRun(args)
     sys.exit(status)
