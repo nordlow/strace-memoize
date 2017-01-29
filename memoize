@@ -28,7 +28,11 @@ HASH_NAME = 'md5'
 RELEVANT_DIRS = ['.']
 
 
-def memoizedRun(args, trace_childs=True):
+def _is_hashable_file_name(fname):
+    return fname != b'/dev/urandom' and not fname.startswith(b'/tmp')
+
+
+def memoized_run(args, trace_childs=True):
 
     fnames_open = set()
     fnames_stat = set()
@@ -80,11 +84,12 @@ def memoizedRun(args, trace_childs=True):
 
         print('stat():')
         for fname in sorted(fnames_stat, reverse=True):
-            print('  - "' + bytes.decode(fname) + '"')
+            if _is_hashable_file_name(fname): # if not a temp file
+                print('  - "' + bytes.decode(fname) + '"')
 
         print('open():')
         for fname in sorted(fnames_open, reverse=True):
-            if fname != b'/dev/urandom' and not fname.startswith(b'/tmp'): # if not a temp file
+            if _is_hashable_file_name(fname): # if not a temp file
 
                 mtime = os.path.getmtime(fname)
 
@@ -98,8 +103,9 @@ def memoizedRun(args, trace_childs=True):
                 print('  - "' + bytes.decode(fname) + '"')
 
         print('access():')
-        for file_access in sorted(fnames_access, reverse=True):
-            print('  - "' + bytes.decode(file_access) + '"')
+        for fname in sorted(fnames_access, reverse=True):
+            if _is_hashable_file_name(fname): # if not a temp file
+                print('  - "' + bytes.decode(fname) + '"')
 
         return ret
 
@@ -114,5 +120,5 @@ if __name__ == '__main__':
         elif opt == '-d':
             RELEVANT_DIRS.append(value)
 
-    completedProcess = memoizedRun(args)
+    completedProcess = memoized_run(args)
     sys.exit(completedProcess.returncode)
