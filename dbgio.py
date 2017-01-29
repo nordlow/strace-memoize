@@ -1,4 +1,5 @@
 import inspect
+import pprint
 
 def dln(msg, level_str='info'):
 
@@ -14,3 +15,5 @@ def dln(msg, level_str='info'):
           str(info.lineno) +    # __LINE__
           ": " +
           level_str + ": ")
+
+    pprint.pprint(msg)

@@ -10,6 +10,6 @@
 
 int main(int argc, const char * argv[], const char * envp[])
 {
-    int x = 123 + "a" + y;
+    int x = 123;
     return 0;
 }
