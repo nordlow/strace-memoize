@@ -24,7 +24,7 @@ SYS_CALLS = ["open", "openat", "stat", "stat64", "statfs", "access"]
 SYS_CALLS_AT = ["openat"]       # Linux
 
 # TODO: Check if call is successful, doesn't end with
-RX = re.compile(r'.*\b(?:' + ('|').join(SYS_CALLS) + ')\("(.*)", .*')
+STRACE_LINE_RX = re.compile(r'([0-9]+) \b(?:' + ('|').join(SYS_CALLS) + ')\("(.*)", .*')
 
 # content hashing algorithm
 HASH_NAME = 'md5'
@@ -41,7 +41,7 @@ def add_relevant_dir(d):
 def hashsum(fname, hash_name = HASH_NAME):
     """Get content hash file name FNAME."""
     try:
-        data = open(fname, 'r').read()
+        data = open(fname, 'rb').read()
     except:
         data = None
 
@@ -87,10 +87,12 @@ def process_strace_output(output):
     for line in output:
         line_str = str(line)
 
-        match = (re.match(RX, line_str))
-        if match:
+        line_match = (re.match(STRACE_LINE_RX, line_str))
+        if line_match:
+            print("line_match:", line_str)
 
-            fname = os.path.normpath(match.group(1))
+            fname = os.path.normpath(line_match.group(2))
+            dln(fname)
             if (is_relevant_file(fname) and
                 os.path.isfile(fname)
                 and fname not in files_set):
@@ -133,15 +135,12 @@ def read_deps(depsname):
 
 
 def write_deps(depsname, deps):
-    dln(deps)
-    if False:
-        f = open(depsname, 'wb')
-        pickle.dump(deps, f)
-        f.close()
+    f = open(depsname, 'wb')
+    pickle.dump(deps, f)
+    f.close()
 
 
 def memoize_with_deps(depsname, deps, cmd):
-
     files = deps.get(cmd, [('aaa', '', '')])
 
     if not files_up_to_date(files):
@@ -151,7 +150,7 @@ def memoize_with_deps(depsname, deps, cmd):
         elif deps.has_key(cmd):
             del deps[cmd]
 
-        write_deps(depsname, deps)
+        # write_deps(depsname, deps)
 
         return status
     else:
