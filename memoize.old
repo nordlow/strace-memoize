@@ -58,12 +58,12 @@ def modtime(fname):
 
 
 def files_up_to_date(files):
-    for (fname, md5, mtime) in files:
+    for (fname, chash, mtime) in files:
         if OPT_USE_MODTIME:
             if modtime(fname) != mtime:
                 return False
         else:
-            if hashsum(fname) != md5:
+            if hashsum(fname) != chash:
                 return False
     return True
 
