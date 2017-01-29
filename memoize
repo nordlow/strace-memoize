@@ -7,10 +7,11 @@ import re
 import hashlib
 import tempfile
 import pickle                   # cPickle no available in Python3
-import inspect
 
 from pprint import pprint as pp
 from getopt import getopt
+
+from dbgio import dln
 
 # if set us modification time instead of MD5-sum as check
 OPT_USE_MODTIME = False
@@ -26,15 +27,6 @@ RX = re.compile(r'.*\b(?:' + ('|').join(SYS_CALLS) + ')\("(.*)", .*')
 # content hashing algorithm
 HASH_NAME = 'md5'
 
-def dln(msg, level_str='info'):
-    frame = inspect.currentframe()
-
-    file_name  =  frame.f_code.co_filename
-    file_no = frame.f_lineno
-
-    print(file_name + ":" + str(file_no) + ": " + level_str + ": ")
-    pp(msg)
-
 def set_use_modtime(use):
     OPT_USE_MODTIME = use
 
@@ -44,7 +36,7 @@ def add_relevant_dir(d):
 def hashsum(fname, hash_name = HASH_NAME):
     """Get content hash file name FNAME."""
     try:
-        data = file(fname).read()
+        data = open(fname, 'r').read()
     except:
         data = None
 
@@ -83,18 +75,17 @@ def process_strace_output(output):
     files = []
     files_dict = {}
     for line in output:
-        dln( line)
-        match = (re.match(RX, line))
+        line_str = str(line)
+        match = (re.match(RX, line_str))
         if match:
             fname = os.path.normpath(match.group(1))
-            print("match:", line.strip())
             if (is_relevant(fname) and
                 os.path.isfile(fname)
                 and not files_dict.has_key(fname)):
                 files.append((fname, hashsum(fname), modtime(fname)))
                 files_dict[fname] = True
 
-        match = re.match(r'.*exit_group\((.*)\).*', line)
+        match = re.match(r'.*exit_group\((.*)\).*', line_str)
         if match:
             status = int(match.group(1))
 
@@ -114,7 +105,7 @@ def generate_deps(cmd):
 
 def read_deps(depsname):
     try:
-        f = file(depsname, 'rb')
+        f = open(depsname, 'rb')
     except:
         f = None
 
@@ -126,7 +117,7 @@ def read_deps(depsname):
         return {}
 
 def write_deps(depsname, deps):
-    f = file(depsname, 'wb')
+    f = open(depsname, 'wb')
     pickle.dump(deps, f)
     f.close()
 
