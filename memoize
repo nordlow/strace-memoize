@@ -92,8 +92,6 @@ def process_strace_output(output):
     return (status, files)
 
 def generate_deps(cmd):
-    print('running', cmd)
-
     with tempfile.NamedTemporaryFile() as outfile:
         os.system(('strace -f -o %s -e trace=' +
                    ",".join(SYS_CALLS + SYS_CALLS_AT) +
