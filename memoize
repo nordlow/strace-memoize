@@ -30,9 +30,9 @@ RELEVANT_DIRS = ['.']
 
 def memoizedRun(args, trace_childs=True):
 
-    files_opened = set()
-    files_statted = set()
-    files_accessed = set()
+    files_open = set()
+    files_stat = set()
+    files_access = set()
 
     with tempfile.NamedTemporaryFile() as out_file:
 
@@ -68,27 +68,27 @@ def memoizedRun(args, trace_childs=True):
 
                     # in decreasing probability
                     if syscall == b'stat':
-                        files_statted.add(syscall_fname)
+                        files_stat.add(syscall_fname)
                     elif syscall == b'open':
-                        files_opened.add(syscall_fname)
+                        files_open.add(syscall_fname)
                     elif syscall == b'access':
-                        files_accessed.add(syscall_fname)
+                        files_access.add(syscall_fname)
 
                     print(pid, syscall, syscall_fname)
                 except ValueError:
                     pass
 
         print('stat():')
-        for file_statted in files_statted:
-            print("  - " + str(file_statted))
+        for file_stat in files_stat:
+            print("  - " + str(file_stat))
 
         print('open():')
-        for file_opened in files_opened:
-            print("  - " + str(file_opened))
+        for file_open in files_open:
+            print("  - " + str(file_open))
 
         print('access():')
-        for file_accessed in files_accessed:
-            print("  - " + str(file_accessed))
+        for file_access in files_access:
+            print("  - " + str(file_access))
 
         return ret
 
