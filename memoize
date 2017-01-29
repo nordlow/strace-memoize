@@ -28,7 +28,7 @@ HASH_NAME = 'md5'
 RELEVANT_DIRS = ['.']
 
 
-def _file_name_has_state(fname):
+def _is_nonvolatile_existing_file(fname):
     return fname != b'/dev/urandom' and os.path.exists(fname)
 
 
@@ -100,7 +100,7 @@ def memoized_run(args, trace_childs=True):
             prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
             path = bytes.decode(prefix + bname)
 
-            if _file_name_has_state(fname):
+            if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 print('  - "' + path + '"' + ' mtime=' + str(mtime))
 
@@ -113,7 +113,7 @@ def memoized_run(args, trace_childs=True):
             prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
             path = bytes.decode(prefix + bname)
 
-            if _file_name_has_state(fname):
+            if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
                     print('  - "' + path + '"' + ' mtime=' + str(mtime))
@@ -133,7 +133,7 @@ def memoized_run(args, trace_childs=True):
             prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
             path = bytes.decode(prefix + bname)
 
-            if _file_name_has_state(fname):
+            if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
                     print('  - "' + path + '"' + ' mtime=' + str(mtime))
@@ -154,7 +154,7 @@ def memoized_run(args, trace_childs=True):
             prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
             path = bytes.decode(prefix + bname)
 
-            if _file_name_has_state(fname):
+            if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
                     print('  - "' + path + '"' + ' mtime=' + str(mtime))
@@ -175,7 +175,7 @@ def memoized_run(args, trace_childs=True):
             prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
             path = bytes.decode(prefix + bname)
 
-            if _file_name_has_state(fname):
+            if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 print('  - "' + path + '"' + ' mtime=' + str(mtime))
 
