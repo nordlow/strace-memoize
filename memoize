@@ -34,7 +34,9 @@ def _is_checkable_file_name(fname):
 
 def memoized_run(args, trace_childs=True):
 
-    fnames_open = set()
+    fnames_open_rdonly = set()
+    fnames_open_wronly = set()
+    fnames_open_rdwr = set()
     fnames_stat = set()
     fnames_access = set()
 
@@ -71,7 +73,14 @@ def memoized_run(args, trace_childs=True):
                     if syscall == b'stat':
                         fnames_stat.add(syscall_fname)
                     elif syscall == b'open':
-                        fnames_open.add(syscall_fname)
+                        if out_line.startswith(b'O_RDONLY'): # read-only
+                            fnames_open_rdonly.add(syscall_fname)
+                        elif out_line.startswith(b'O_WRONLY'): # write-only
+                            fnames_open_wronly.add(syscall_fname)
+                        elif out_line.startswith(b'O_RDWR'): # read-write
+                            fnames_open_rdwr.add(syscall_fname)
+                        else:
+                            assert(False)
                     elif syscall == b'access':
                         fnames_access.add(syscall_fname)
                     else:
@@ -87,12 +96,38 @@ def memoized_run(args, trace_childs=True):
             if _is_checkable_file_name(fname):
                 print('  - "' + bytes.decode(fname) + '"')
 
-        print('open():')
-        for fname in sorted(fnames_open, reverse=True):
+        print('read-open():')
+        for fname in sorted(fnames_open_rdonly, reverse=True):
             if _is_checkable_file_name(fname):
-
                 mtime = os.path.getmtime(fname)
+                if os.path.isdir(fname):
+                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime))
+                else:
+                    cdata = open(fname, 'rb').read()
+                    chash = hashlib.new(HASH_NAME, cdata)
+                    chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
+                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
+            else:
+                print('  - "' + bytes.decode(fname) + '"')
 
+        print('write-open():')
+        for fname in sorted(fnames_open_wronly, reverse=True):
+            if _is_checkable_file_name(fname):
+                mtime = os.path.getmtime(fname)
+                if os.path.isdir(fname):
+                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime))
+                else:
+                    cdata = open(fname, 'rb').read()
+                    chash = hashlib.new(HASH_NAME, cdata)
+                    chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
+                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
+            else:
+                print('  - "' + bytes.decode(fname) + '"')
+
+        print('read-write-open():')
+        for fname in sorted(fnames_open_rdwr, reverse=True):
+            if _is_checkable_file_name(fname):
+                mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
                     print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime))
                 else:
