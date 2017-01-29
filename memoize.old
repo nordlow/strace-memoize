@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import os.path
+import re
+import hashlib
+import tempfile
+import pickle                   # cPickle no available in Python3
+
+from pprint import pprint as pp
+from getopt import getopt
+
+from dbgio import dln
+
+# if set use modification time instead of content-hash as indentity
+OPT_USE_MODTIME = False
+
+# relevant directories to search for dependencies
+RELEVANT_DIRS = ['.']
+
+SYS_CALLS = ["open", "openat", "stat", "stat64", "statfs", "access"]
+SYS_CALLS_AT = ["openat"]       # Linux
+
+# TODO: Check if call is successful, doesn't end with
+STRACE_LINE_RX = re.compile(r'([0-9]+) \b(?:' + ('|').join(SYS_CALLS) + ')\("(.*)", .*')
+
+# content hashing algorithm
+HASH_NAME = 'md5'
+
+
+def set_use_modtime(use):
+    OPT_USE_MODTIME = use
+
+
+def add_relevant_dir(d):
+    RELEVANT_DIRS.append(d)
+
+
+def hashsum(fname, hash_name = HASH_NAME):
+    """Get content hash file name FNAME."""
+    try:
+        data = open(fname, 'rb').read()
+    except:
+        data = None
+
+    if data == None:
+        return None
+    else:
+        return hashlib.new(hash_name, data).hexdigest()
+
+
+def modtime(fname):
+    try:
+        return os.path.getmtime(fname)
+    except:
+        return None
+
+
+def files_up_to_date(files):
+    for (fname, md5, mtime) in files:
+        if OPT_USE_MODTIME:
+            if modtime(fname) != mtime:
+                return False
+        else:
+            if hashsum(fname) != md5:
+                return False
+    return True
+
+
+def is_relevant_file(fname):
+    path = os.path.abspath(fname)
+    for dir_ in RELEVANT_DIRS:
+        path2 = os.path.abspath(dir_)
+        if path.startswith(path2):
+            return True
+    return False
+
+
+def process_strace_output(output):
+
+    status = 0
+    files = []
+    files_set = set();
+
+    for line in output:
+        line_str = str(line)
+
+        line_match = (re.match(STRACE_LINE_RX, line_str))
+        if line_match:
+            print("line_match:", line_str)
+
+            fname = os.path.normpath(line_match.group(2))
+            dln(fname)
+            if (is_relevant_file(fname) and
+                os.path.isfile(fname)
+                and fname not in files_set):
+
+                files.append((fname, hashsum(fname), modtime(fname)))
+                files_set.add(fname)
+
+        match = re.match(r'.*exit_group\((.*)\).*', line_str)
+        if match:
+            status = int(match.group(1))
+
+    return (status, files)
+
+
+def generate_deps(cmd):
+    print('running', cmd)
+
+    with tempfile.NamedTemporaryFile() as outfile:
+        os.system(('strace -f -o %s -e trace=' +
+                   ",".join(SYS_CALLS + SYS_CALLS_AT) +
+                   ',exit_group %s') % (outfile.name, cmd))
+
+        output = outfile.readlines()
+
+        return process_strace_output(output)
+
+
+def read_deps(depsname):
+    try:
+        f = open(depsname, 'rb')
+    except:
+        f = None
+
+    if f:
+        deps = pickle.load(f)
+        f.close()
+        return deps
+    else:
+        return {}
+
+
+def write_deps(depsname, deps):
+    f = open(depsname, 'wb')
+    pickle.dump(deps, f)
+    f.close()
+
+
+def memoize_with_deps(depsname, deps, cmd):
+    files = deps.get(cmd, [('aaa', '', '')])
+
+    if not files_up_to_date(files):
+        (status, files) = generate_deps(cmd)
+        if status == 0:
+            deps[cmd] = files
+        elif deps.has_key(cmd):
+            del deps[cmd]
+
+        # write_deps(depsname, deps)
+
+        return status
+    else:
+        print('up-to-date:', cmd)
+        return 0
+
+
+default_depsname = '.deps'
+default_deps = read_deps(default_depsname)
+
+
+def memoize(cmd):
+    return memoize_with_deps(default_depsname, default_deps, cmd)
+
+if __name__ == '__main__':
+    (opts, cmd) = getopt(sys.argv[1:], 'td:')
+    cmd = ' '.join(cmd)
+    for (opt, value) in opts:
+        if opt == '-t':
+            OPT_USE_MODTIME = True
+        elif opt == '-d':
+            RELEVANT_DIRS.append(value)
+
+    status = memoize(cmd)
+    sys.exit(status)
