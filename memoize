@@ -91,57 +91,93 @@ def memoized_run(args, trace_childs=True):
                 except ValueError:
                     pass
 
+        prev_dname = None
+
         print('stat():')
         for fname in sorted(fnames_stat, reverse=True):
+            dname = os.path.dirname(fname)
+            bname = os.path.basename(fname)
+            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
+            path = bytes.decode(prefix + bname)
+
             if _is_checkable_file_name(fname):
-                print('  - "' + bytes.decode(fname) + '"')
+                print('  - "' + path + '"')
+
+            prev_dname = dname
 
         print('read-open():')
         for fname in sorted(fnames_open_rdonly, reverse=True):
+            dname = os.path.dirname(fname)
+            bname = os.path.basename(fname)
+            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
+            path = bytes.decode(prefix + bname)
+
             if _is_checkable_file_name(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
-                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime))
+                    print('  - "' + path + '"' + ' mtime=' + str(mtime))
                 else:
                     cdata = open(fname, 'rb').read()
                     chash = hashlib.new(HASH_NAME, cdata)
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
+                    print('  - "' + path + '"' + ' mtime=' + str(mtime) + chash_s)
             else:
-                print('  - "' + bytes.decode(fname) + '"')
+                print('  - "' + path + '"')
+            prev_dname = dname
 
         print('write-open():')
         for fname in sorted(fnames_open_wronly, reverse=True):
+            dname = os.path.dirname(fname)
+            bname = os.path.basename(fname)
+            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
+            path = bytes.decode(prefix + bname)
+
             if _is_checkable_file_name(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
-                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime))
+                    print('  - "' + path + '"' + ' mtime=' + str(mtime))
                 else:
                     cdata = open(fname, 'rb').read()
                     chash = hashlib.new(HASH_NAME, cdata)
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
+                    print('  - "' + path + '"' + ' mtime=' + str(mtime) + chash_s)
             else:
-                print('  - "' + bytes.decode(fname) + '"')
+                print('  - "' + path + '"')
+
+            prev_dname = dname
 
         print('read-write-open():')
         for fname in sorted(fnames_open_rdwr, reverse=True):
+            dname = os.path.dirname(fname)
+            bname = os.path.basename(fname)
+            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
+            path = bytes.decode(prefix + bname)
+
             if _is_checkable_file_name(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
-                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime))
+                    print('  - "' + path + '"' + ' mtime=' + str(mtime))
                 else:
                     cdata = open(fname, 'rb').read()
                     chash = hashlib.new(HASH_NAME, cdata)
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
+                    print('  - "' + path + '"' + ' mtime=' + str(mtime) + chash_s)
             else:
-                print('  - "' + bytes.decode(fname) + '"')
+                print('  - "' + path + '"')
+
+            prev_dname = dname
 
         print('access():')
         for fname in sorted(fnames_access, reverse=True):
+            dname = os.path.dirname(fname)
+            bname = os.path.basename(fname)
+            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
+            path = bytes.decode(prefix + bname)
+
             if _is_checkable_file_name(fname):
-                print('  - "' + bytes.decode(fname) + '"')
+                print('  - "' + path + '"')
+
+            prev_dname = dname
 
         return ret
 
