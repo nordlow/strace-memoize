@@ -93,7 +93,7 @@ def process_strace_output(output):
             fname = os.path.normpath(match.group(1))
             if (is_relevant_file(fname) and
                 os.path.isfile(fname)
-                and not fname in files_set):
+                and fname not in files_set):
 
                 files.append((fname, hashsum(fname), modtime(fname)))
                 files_set.add(fname)
