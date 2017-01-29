@@ -13,10 +13,12 @@ from getopt import getopt
 
 from dbgio import dln
 
+
 # if set us modification time instead of MD5-sum as check
 OPT_USE_MODTIME = False
 
-OPT_DIRS = ['.']
+# relevant directories to search for dependencies
+RELEVANT_DIRS = ['.']
 
 SYS_CALLS = ["open", "openat", "stat", "stat64", "statfs", "access"]
 SYS_CALLS_AT = ["openat"]       # Linux
@@ -27,11 +29,14 @@ RX = re.compile(r'.*\b(?:' + ('|').join(SYS_CALLS) + ')\("(.*)", .*')
 # content hashing algorithm
 HASH_NAME = 'md5'
 
+
 def set_use_modtime(use):
     OPT_USE_MODTIME = use
 
+
 def add_relevant_dir(d):
-    OPT_DIRS.append(d)
+    RELEVANT_DIRS.append(d)
+
 
 def hashsum(fname, hash_name = HASH_NAME):
     """Get content hash file name FNAME."""
@@ -45,11 +50,13 @@ def hashsum(fname, hash_name = HASH_NAME):
     else:
         return hashlib.new(hash_name, data).hexdigest()
 
+
 def modtime(fname):
     try:
         return os.path.getmtime(fname)
     except:
         return None
+
 
 def files_up_to_date(files):
     for (fname, md5, mtime) in files:
@@ -61,35 +68,40 @@ def files_up_to_date(files):
                 return False
     return True
 
-def is_relevant(fname):
-    path1 = os.path.abspath(fname)
-    for dir_ in OPT_DIRS:
+
+def is_relevant_file(fname):
+    path = os.path.abspath(fname)
+    for dir_ in RELEVANT_DIRS:
         path2 = os.path.abspath(dir_)
-        if path1.startswith(path2):
+        if path.startswith(path2):
             return True
     return False
+
 
 def process_strace_output(output):
 
     status = 0
     files = []
+    files_set = set();
     files_dict = {}
     for line in output:
         line_str = str(line)
         match = (re.match(RX, line_str))
         if match:
             fname = os.path.normpath(match.group(1))
-            if (is_relevant(fname) and
+            if (is_relevant_file(fname) and
                 os.path.isfile(fname)
                 and not files_dict.has_key(fname)):
                 files.append((fname, hashsum(fname), modtime(fname)))
                 files_dict[fname] = True
+                files_set.add(fname)
 
         match = re.match(r'.*exit_group\((.*)\).*', line_str)
         if match:
             status = int(match.group(1))
 
     return (status, files)
+
 
 def generate_deps(cmd):
     print('running', cmd)
@@ -102,6 +114,7 @@ def generate_deps(cmd):
         output = outfile.readlines()
 
         return process_strace_output(output)
+
 
 def read_deps(depsname):
     try:
@@ -116,27 +129,37 @@ def read_deps(depsname):
     else:
         return {}
 
+
 def write_deps(depsname, deps):
-    f = open(depsname, 'wb')
-    pickle.dump(deps, f)
-    f.close()
+    dln(deps)
+    if False:
+        f = open(depsname, 'wb')
+        pickle.dump(deps, f)
+        f.close()
+
 
 def memoize_with_deps(depsname, deps, cmd):
+
     files = deps.get(cmd, [('aaa', '', '')])
+
     if not files_up_to_date(files):
         (status, files) = generate_deps(cmd)
         if status == 0:
             deps[cmd] = files
         elif deps.has_key(cmd):
             del deps[cmd]
+
         write_deps(depsname, deps)
+
         return status
     else:
         print('up-to-date:', cmd)
         return 0
 
+
 default_depsname = '.deps'
 default_deps = read_deps(default_depsname)
+
 
 def memoize(cmd):
     return memoize_with_deps(default_depsname, default_deps, cmd)
@@ -148,7 +171,7 @@ if __name__ == '__main__':
         if opt == '-t':
             OPT_USE_MODTIME = True
         elif opt == '-d':
-            OPT_DIRS.append(value)
+            RELEVANT_DIRS.append(value)
 
     status = memoize(cmd)
     sys.exit(status)
