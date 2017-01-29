@@ -80,15 +80,15 @@ def memoizedRun(args, trace_childs=True):
 
         print('stat():')
         for file_stat in files_stat:
-            print("  - " + str(file_stat))
+            print("  - " + bytes.decode(file_stat))
 
         print('open():')
         for file_open in files_open:
-            print("  - " + str(file_open))
+            print("  - " + bytes.decode(file_open))
 
         print('access():')
         for file_access in files_access:
-            print("  - " + str(file_access))
+            print("  - " + bytes.decode(file_access))
 
         return ret
 
