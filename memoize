@@ -28,7 +28,7 @@ HASH_NAME = 'md5'
 RELEVANT_DIRS = ['.']
 
 
-def _is_hashable_file_name(fname):
+def _is_checkable_file_name(fname):
     return fname != b'/dev/urandom' and os.path.exists(fname)
 
 
@@ -84,27 +84,28 @@ def memoized_run(args, trace_childs=True):
 
         print('stat():')
         for fname in sorted(fnames_stat, reverse=True):
-            if _is_hashable_file_name(fname):
+            if _is_checkable_file_name(fname):
                 print('  - "' + bytes.decode(fname) + '"')
 
         print('open():')
         for fname in sorted(fnames_open, reverse=True):
-            if _is_hashable_file_name(fname):
+            if _is_checkable_file_name(fname):
 
                 mtime = os.path.getmtime(fname)
 
-                cdata = open(fname, 'rb').read()
-                chash = hashlib.new(HASH_NAME, cdata)
-
-                chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-
-                print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
+                if os.path.isdir(fname):
+                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime))
+                else:
+                    cdata = open(fname, 'rb').read()
+                    chash = hashlib.new(HASH_NAME, cdata)
+                    chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
+                    print('  - "' + bytes.decode(fname) + '"' + ' mtime=' + str(mtime) + chash_s)
             else:
                 print('  - "' + bytes.decode(fname) + '"')
 
         print('access():')
         for fname in sorted(fnames_access, reverse=True):
-            if _is_hashable_file_name(fname):
+            if _is_checkable_file_name(fname):
                 print('  - "' + bytes.decode(fname) + '"')
 
         return ret
