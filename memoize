@@ -29,7 +29,7 @@ RELEVANT_DIRS = ['.']
 
 INDENT_STEP = 2                 # number of spaces per indentation level
 
-include_system_deps = True
+include_system_deps = False
 
 
 def _is_nonvolatile_existing_file(fname):
@@ -46,7 +46,13 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
     prev_dname = None
 
     for fname in filter(lambda fname: (include_system_deps or
-                                       not (fname.startswith(b'/'))),
+                                       not (fname.startswith(b'/usr') or
+                                            fname.startswith(b'/lib') or
+                                            fname.startswith(b'/lib64') or
+                                            fname.startswith(b'/dev') or
+                                            fname.startswith(b'/proc') or
+                                            fname.startswith(b'/etc') or
+                                            fname.startswith(b'/tmp'))),
                         sorted(fnames, reverse=True)):
 
         dname = os.path.dirname(fname)
