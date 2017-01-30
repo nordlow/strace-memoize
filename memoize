@@ -38,6 +38,27 @@ def _indent_space(indent):
     return ' '*INDENT_STEP*indent
 
 
+def _print_fnames(fnames, indent):
+
+    prev_dname = None
+
+    for fname in sorted(fnames, reverse=True):
+
+        dname = os.path.dirname(fname)
+        dname_qs = '"' + bytes.decode(dname) + '/"'
+        bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
+
+        if dname != prev_dname:
+            print(_indent_space(indent) + '- ' + dname_qs + ':')
+
+        indent += 1
+        if _is_nonvolatile_existing_file(fname):
+            mtime = os.path.getmtime(fname)
+            print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
+        indent -= 1
+
+        prev_dname = dname
+
 def memoized_run(args, trace_childs=True):
 
     indent = 0
@@ -113,38 +134,10 @@ def memoized_run(args, trace_childs=True):
         print("\n============================= TRACE RESULTS ===================================\n")
 
         print('syscall=stat():')
-        for fname in sorted(fnames_stat, reverse=True):
-            dname = os.path.dirname(fname)
-            dname_qs = '"' + bytes.decode(dname) + '/"'
-            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
-
-            if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + dname_qs + ':')
-
-            indent += 1
-            if _is_nonvolatile_existing_file(fname):
-                mtime = os.path.getmtime(fname)
-                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
-            indent -= 1
-
-            prev_dname = dname
+        _print_fnames(fnames=fnames_stat, indent=indent)
 
         print('syscall=statfs():')
-        for fname in sorted(fnames_statfs, reverse=True):
-            dname = os.path.dirname(fname)
-            dname_qs = '"' + bytes.decode(dname) + '/"'
-            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
-
-            if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + dname_qs + ':')
-
-            indent += 1
-            if _is_nonvolatile_existing_file(fname):
-                mtime = os.path.getmtime(fname)
-                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
-                indent -= 1
-
-            prev_dname = dname
+        _print_fnames(fnames=fnames_statfs, indent=indent)
 
         print('syscall=open-read():')
         for fname in sorted(fnames_open_rdonly, reverse=True):
@@ -192,6 +185,7 @@ def memoized_run(args, trace_childs=True):
                     print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
             else:
                 print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
+            indent -= 1
 
             prev_dname = dname
 
