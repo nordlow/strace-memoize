@@ -218,20 +218,7 @@ def memoized_run(args, trace_childs=True):
             prev_dname = dname
 
         print('syscall=access():')
-        for fname in sorted(fnames_access, reverse=True):
-            dname = os.path.dirname(fname)
-            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
-
-            if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + '"'+bytes.decode(dname)+'"' + '/:')
-
-            indent += 1
-            if _is_nonvolatile_existing_file(fname):
-                mtime = os.path.getmtime(fname)
-                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
-            indent -= 1
-
-            prev_dname = dname
+        _print_fnames(fnames=fnames_access, indent=indent)
 
         return ret
 
