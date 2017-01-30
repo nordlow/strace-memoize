@@ -40,7 +40,7 @@ def _indent_space(indent):
     return ' '*INDENT_STEP*indent
 
 
-def _print_fnames(fnames, indent):
+def _print_syscall_fnames(syscall_s, fnames, indent):
 
     prev_dname = None
 
@@ -138,10 +138,10 @@ def memoized_run(args, trace_childs=True):
         print("\n============================= TRACE RESULTS ===================================\n")
 
         print('syscall=stat():')
-        _print_fnames(fnames=fnames_stat, indent=indent)
+        _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
 
         print('syscall=statfs():')
-        _print_fnames(fnames=fnames_statfs, indent=indent)
+        _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
 
         print('syscall=open-read():')
         for fname in sorted(fnames_open_rdonly, reverse=True):
@@ -218,7 +218,7 @@ def memoized_run(args, trace_childs=True):
             prev_dname = dname
 
         print('syscall=access():')
-        _print_fnames(fnames=fnames_access, indent=indent)
+        _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
 
         return ret
 
