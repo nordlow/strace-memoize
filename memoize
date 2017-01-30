@@ -147,7 +147,7 @@ def memoized_run(args, trace_childs=True):
         for fname in sorted(fnames_open_rdonly, reverse=True):
             dname = os.path.dirname(fname)
             dname_qs = '"' + bytes.decode(dname) + '/"'
-            bname_qs = bytes.decode(os.path.basename(fname))
+            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
             if dname != prev_dname:
                 print(_indent_space(indent) + '- ' + dname_qs + ':')
@@ -172,7 +172,7 @@ def memoized_run(args, trace_childs=True):
         for fname in sorted(fnames_open_wronly, reverse=True):
             dname = os.path.dirname(fname)
             dname_qs = '"' + bytes.decode(dname) + '/"'
-            bname_qs = bytes.decode(os.path.basename(fname))
+            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
             if dname != prev_dname:
                 print(_indent_space(indent) + '- ' + dname_qs + ':')
@@ -196,7 +196,7 @@ def memoized_run(args, trace_childs=True):
         print('syscall=open-read-write():')
         for fname in sorted(fnames_open_rdwr, reverse=True):
             dname = os.path.dirname(fname)
-            bname_qs = bytes.decode(os.path.basename(fname))
+            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
             if dname != prev_dname:
                 print(_indent_space(indent) + '- ' + dname_qs + ':')
@@ -220,7 +220,7 @@ def memoized_run(args, trace_childs=True):
         print('syscall=access():')
         for fname in sorted(fnames_access, reverse=True):
             dname = os.path.dirname(fname)
-            bname_qs = bytes.decode(os.path.basename(fname))
+            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
             if dname != prev_dname:
                 print(_indent_space(indent) + '- ' + '"'+bytes.decode(dname)+'"' + '/:')
