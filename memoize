@@ -106,15 +106,16 @@ def memoized_run(args, trace_childs=True):
         print('stat():')
         for fname in sorted(fnames_stat, reverse=True):
             dname = os.path.dirname(fname)
-            bname_u = bytes.decode(os.path.basename(fname))
+            dname_qs = '"' + bytes.decode(dname) + '/"'
+            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
             if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + '"' + bytes.decode(dname) + '/:')
+                print(_indent_space(indent) + '- ' + dname_qs + ':')
 
             indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
-                print(_indent_space(indent) + '- ' + '"' + bname_u + '"' + ' mtime=' + str(mtime))
+                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
             indent -= 1
 
             prev_dname = dname
@@ -122,23 +123,24 @@ def memoized_run(args, trace_childs=True):
         print('read-open():')
         for fname in sorted(fnames_open_rdonly, reverse=True):
             dname = os.path.dirname(fname)
-            bname_u = bytes.decode(os.path.basename(fname))
+            dname_qs = '"' + bytes.decode(dname) + '/"'
+            bname_qs = bytes.decode(os.path.basename(fname))
 
             if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + '"' + bytes.decode(dname) + '/:')
+                print(_indent_space(indent) + '- ' + dname_qs + ':')
 
             indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
-                    print(_indent_space(indent) + '- ' + '"' + bname_u + '"' + ' mtime=' + str(mtime))
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
                 else:
                     cdata = open(fname, 'rb').read()
                     chash = hashlib.new(HASH_NAME, cdata)
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print(_indent_space(indent) + '- ' + '"' + bname_u + '"' + ' mtime=' + str(mtime) + chash_s)
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
             else:
-                print(_indent_space(indent) + '- ' + fname + '"')
+                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
             indent -= 1
 
             prev_dname = dname
@@ -146,56 +148,64 @@ def memoized_run(args, trace_childs=True):
         print('write-open():')
         for fname in sorted(fnames_open_wronly, reverse=True):
             dname = os.path.dirname(fname)
-            bname = os.path.basename(fname)
-            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
-            path = bytes.decode(prefix + bname)
+            dname_qs = '"' + bytes.decode(dname) + '/"'
+            bname_qs = bytes.decode(os.path.basename(fname))
+
+            if dname != prev_dname:
+                print(_indent_space(indent) + '- ' + dname_qs + ':')
 
             indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
-                    print('  - "' + path + '"' + ' mtime=' + str(mtime))
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
                 else:
                     cdata = open(fname, 'rb').read()
                     chash = hashlib.new(HASH_NAME, cdata)
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print('  - "' + path + '"' + ' mtime=' + str(mtime) + chash_s)
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
             else:
-                print('  - "' + path + '"')
+                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
 
             prev_dname = dname
 
         print('read-write-open():')
         for fname in sorted(fnames_open_rdwr, reverse=True):
             dname = os.path.dirname(fname)
-            bname = os.path.basename(fname)
-            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
-            path = bytes.decode(prefix + bname)
+            bname_qs = bytes.decode(os.path.basename(fname))
 
+            if dname != prev_dname:
+                print(_indent_space(indent) + '- ' + dname_qs + ':')
+
+            indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
-                    print('  - "' + path + '"' + ' mtime=' + str(mtime))
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
                 else:
                     cdata = open(fname, 'rb').read()
                     chash = hashlib.new(HASH_NAME, cdata)
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print('  - "' + path + '"' + ' mtime=' + str(mtime) + chash_s)
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
             else:
-                print('  - "' + path + '"')
+                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
+            indent -= 1
 
             prev_dname = dname
 
         print('access():')
         for fname in sorted(fnames_access, reverse=True):
             dname = os.path.dirname(fname)
-            bname = os.path.basename(fname)
-            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
-            path = bytes.decode(prefix + bname)
+            bname_qs = bytes.decode(os.path.basename(fname))
 
+            if dname != prev_dname:
+                print(_indent_space(indent) + '- ' + '"'+bytes.decode(dname)+'"' + '/:')
+
+            indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
-                print('  - "' + path + '"' + ' mtime=' + str(mtime))
+                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
+            indent -= 1
 
             prev_dname = dname
 
