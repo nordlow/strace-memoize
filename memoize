@@ -31,6 +31,8 @@ INDENT_STEP = 2                 # number of spaces per indentation level
 
 include_system_deps = False
 
+SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
+
 
 def _is_nonvolatile_existing_file(fname):
     return fname != b'/dev/urandom' and os.path.exists(fname)
@@ -46,7 +48,7 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
     prev_dname = None
 
     for fname in filter(lambda fname: (include_system_deps or
-                                       not (re.match(pattern=r'/+(usr|lib|lib64|dev|proc|etc|tmp)',
+                                       not (re.match(pattern=SYSTEM_FILE_RE,
                                                      string=bytes.decode(fname)))),
                         sorted(fnames, reverse=True)):
 
