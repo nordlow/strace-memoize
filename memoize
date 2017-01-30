@@ -29,6 +29,8 @@ RELEVANT_DIRS = ['.']
 
 INDENT_STEP = 2                 # number of spaces per indentation level
 
+include_system_deps = False
+
 
 def _is_nonvolatile_existing_file(fname):
     return fname != b'/dev/urandom' and os.path.exists(fname)
@@ -42,7 +44,9 @@ def _print_fnames(fnames, indent):
 
     prev_dname = None
 
-    for fname in sorted(fnames, reverse=True):
+    for fname in filter(lambda fname: (include_system_deps or
+                                       not (fname.startswith(b'/'))),
+                        sorted(fnames, reverse=True)):
 
         dname = os.path.dirname(fname)
         dname_qs = '"' + bytes.decode(dname) + '/"'
