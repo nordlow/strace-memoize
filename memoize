@@ -110,6 +110,8 @@ def memoized_run(args, trace_childs=True):
 
         indent += 1
 
+        print("\n============================= TRACE RESULTS ===================================\n")
+
         print('syscall=stat():')
         for fname in sorted(fnames_stat, reverse=True):
             dname = os.path.dirname(fname)
