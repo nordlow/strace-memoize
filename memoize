@@ -29,7 +29,7 @@ RELEVANT_DIRS = ['.']
 
 INDENT_STEP = 2                 # number of spaces per indentation level
 
-include_system_deps = False
+include_system_deps = True
 
 
 def _is_nonvolatile_existing_file(fname):
@@ -59,7 +59,13 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
         indent += 1
         if _is_nonvolatile_existing_file(fname):
             mtime = os.path.getmtime(fname)
-            print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
+            if syscall_s in ('stat', 'statfs', 'access') or os.path.isdir(fname):
+                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
+            else:
+                cdata = open(fname, 'rb').read()
+                chash = hashlib.new(HASH_NAME, cdata)
+                chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
+                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
         indent -= 1
 
         prev_dname = dname
@@ -141,80 +147,10 @@ def memoized_run(args, trace_childs=True):
         _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
         _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
         _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
-
-        print('syscall=open-read():')
-        for fname in sorted(fnames_open_rdonly, reverse=True):
-            dname = os.path.dirname(fname)
-            dname_qs = '"' + bytes.decode(dname) + '/"'
-            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
-
-            if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + dname_qs + ':')
-
-            indent += 1
-            if _is_nonvolatile_existing_file(fname):
-                mtime = os.path.getmtime(fname)
-                if os.path.isdir(fname):
-                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
-                else:
-                    cdata = open(fname, 'rb').read()
-                    chash = hashlib.new(HASH_NAME, cdata)
-                    chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
-            else:
-                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
-            indent -= 1
-
-            prev_dname = dname
-
-        print('syscall=open-write():')
-        for fname in sorted(fnames_open_wronly, reverse=True):
-            dname = os.path.dirname(fname)
-            dname_qs = '"' + bytes.decode(dname) + '/"'
-            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
-
-            if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + dname_qs + ':')
-
-            indent += 1
-            if _is_nonvolatile_existing_file(fname):
-                mtime = os.path.getmtime(fname)
-                if os.path.isdir(fname):
-                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
-                else:
-                    cdata = open(fname, 'rb').read()
-                    chash = hashlib.new(HASH_NAME, cdata)
-                    chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
-            else:
-                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
-            indent -= 1
-
-            prev_dname = dname
-
-        print('syscall=open-read-write():')
-        for fname in sorted(fnames_open_rdwr, reverse=True):
-            dname = os.path.dirname(fname)
-            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
-
-            if dname != prev_dname:
-                print(_indent_space(indent) + '- ' + dname_qs + ':')
-
-            indent += 1
-            if _is_nonvolatile_existing_file(fname):
-                mtime = os.path.getmtime(fname)
-                if os.path.isdir(fname):
-                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
-                else:
-                    cdata = open(fname, 'rb').read()
-                    chash = hashlib.new(HASH_NAME, cdata)
-                    chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
-            else:
-                print(_indent_space(indent) + '- ' + bytes.decode(fname) + '"')
-            indent -= 1
-
-            prev_dname = dname
+        _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
+        _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_open_rdonly, indent=indent)
+        _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_open_wronly, indent=indent)
+        _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_open_rdwr, indent=indent)
 
         return ret
 
