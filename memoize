@@ -46,13 +46,8 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
     prev_dname = None
 
     for fname in filter(lambda fname: (include_system_deps or
-                                       not (fname.startswith(b'/usr') or
-                                            fname.startswith(b'/lib') or
-                                            fname.startswith(b'/lib64') or
-                                            fname.startswith(b'/dev') or
-                                            fname.startswith(b'/proc') or
-                                            fname.startswith(b'/etc') or
-                                            fname.startswith(b'/tmp'))),
+                                       not (re.match(pattern=r'/+(usr|lib|lib64|dev|proc|etc|tmp)',
+                                                     string=bytes.decode(fname)))),
                         sorted(fnames, reverse=True)):
 
         dname = os.path.dirname(fname)
