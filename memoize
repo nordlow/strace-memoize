@@ -27,12 +27,20 @@ HASH_NAME = 'md5'
 
 RELEVANT_DIRS = ['.']
 
+INDENT_STEP = 2                 # number of spaces per indentation level
+
 
 def _is_nonvolatile_existing_file(fname):
     return fname != b'/dev/urandom' and os.path.exists(fname)
 
 
+def _indent_space(indent):
+    return ' '*INDENT_STEP*indent
+
+
 def memoized_run(args, trace_childs=True):
+
+    indent = 0
 
     fnames_open_rdonly = set()
     fnames_open_wronly = set()
@@ -93,37 +101,46 @@ def memoized_run(args, trace_childs=True):
 
         prev_dname = None
 
+        indent += 1
+
         print('stat():')
         for fname in sorted(fnames_stat, reverse=True):
             dname = os.path.dirname(fname)
-            bname = os.path.basename(fname)
-            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
-            path = bytes.decode(prefix + bname)
+            bname_u = bytes.decode(os.path.basename(fname))
 
+            if dname != prev_dname:
+                print(_indent_space(indent) + '- ' + '"' + bytes.decode(dname) + '/:')
+
+            indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
-                print('  - "' + path + '"' + ' mtime=' + str(mtime))
+                print(_indent_space(indent) + '- ' + '"' + bname_u + '"' + ' mtime=' + str(mtime))
+            indent -= 1
 
             prev_dname = dname
 
         print('read-open():')
         for fname in sorted(fnames_open_rdonly, reverse=True):
             dname = os.path.dirname(fname)
-            bname = os.path.basename(fname)
-            prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
-            path = bytes.decode(prefix + bname)
+            bname_u = bytes.decode(os.path.basename(fname))
 
+            if dname != prev_dname:
+                print(_indent_space(indent) + '- ' + '"' + bytes.decode(dname) + '/:')
+
+            indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
-                    print('  - "' + path + '"' + ' mtime=' + str(mtime))
+                    print(_indent_space(indent) + '- ' + '"' + bname_u + '"' + ' mtime=' + str(mtime))
                 else:
                     cdata = open(fname, 'rb').read()
                     chash = hashlib.new(HASH_NAME, cdata)
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                    print('  - "' + path + '"' + ' mtime=' + str(mtime) + chash_s)
+                    print(_indent_space(indent) + '- ' + '"' + bname_u + '"' + ' mtime=' + str(mtime) + chash_s)
             else:
-                print('  - "' + path + '"')
+                print(_indent_space(indent) + '- ' + fname + '"')
+            indent -= 1
+
             prev_dname = dname
 
         print('write-open():')
@@ -133,6 +150,7 @@ def memoized_run(args, trace_childs=True):
             prefix = dname + b'/' if dname != prev_dname else b' '*(len(dname) + 1)
             path = bytes.decode(prefix + bname)
 
+            indent += 1
             if _is_nonvolatile_existing_file(fname):
                 mtime = os.path.getmtime(fname)
                 if os.path.isdir(fname):
@@ -186,9 +204,9 @@ def memoized_run(args, trace_childs=True):
 
 if __name__ == '__main__':
 
-    (opts, args) = getopt(sys.argv[1:], 'td:')
+    opts, args = getopt(sys.argv[1:], 'td:')
 
-    for (opt, value) in opts:
+    for opt, value in opts:
         if opt == '-t':
             OPT_USE_MODTIME = True
         elif opt == '-d':
