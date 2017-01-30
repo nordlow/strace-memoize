@@ -47,6 +47,7 @@ def memoized_run(args, trace_childs=True):
     fnames_open_rdwr = set()
     fnames_stat = set()
     fnames_statfs = set()
+    fnames_openat = set()
     fnames_access = set()
 
     with tempfile.NamedTemporaryFile() as out_file:
@@ -83,6 +84,9 @@ def memoized_run(args, trace_childs=True):
                         fnames_stat.add(syscall_fname)
                     elif syscall == b'statfs':
                         fnames_statfs.add(syscall_fname)
+                    elif syscall == b'openat':
+                        fnames_openat.add(syscall_fname)
+                        # print(syscall_fname, out_line)
                     elif syscall == b'open':
                         if out_line.startswith(b'O_RDONLY'): # read-only
                             fnames_open_rdonly.add(syscall_fname)
@@ -106,7 +110,7 @@ def memoized_run(args, trace_childs=True):
 
         indent += 1
 
-        print('stat():')
+        print('syscall=stat():')
         for fname in sorted(fnames_stat, reverse=True):
             dname = os.path.dirname(fname)
             dname_qs = '"' + bytes.decode(dname) + '/"'
@@ -123,7 +127,7 @@ def memoized_run(args, trace_childs=True):
 
             prev_dname = dname
 
-        print('statfs():')
+        print('syscall=statfs():')
         for fname in sorted(fnames_statfs, reverse=True):
             dname = os.path.dirname(fname)
             dname_qs = '"' + bytes.decode(dname) + '/"'
@@ -140,7 +144,7 @@ def memoized_run(args, trace_childs=True):
 
             prev_dname = dname
 
-        print('read-open():')
+        print('syscall=open-read():')
         for fname in sorted(fnames_open_rdonly, reverse=True):
             dname = os.path.dirname(fname)
             dname_qs = '"' + bytes.decode(dname) + '/"'
@@ -165,7 +169,7 @@ def memoized_run(args, trace_childs=True):
 
             prev_dname = dname
 
-        print('write-open():')
+        print('syscall=open-write():')
         for fname in sorted(fnames_open_wronly, reverse=True):
             dname = os.path.dirname(fname)
             dname_qs = '"' + bytes.decode(dname) + '/"'
@@ -189,7 +193,7 @@ def memoized_run(args, trace_childs=True):
 
             prev_dname = dname
 
-        print('read-write-open():')
+        print('syscall=open-read-write():')
         for fname in sorted(fnames_open_rdwr, reverse=True):
             dname = os.path.dirname(fname)
             bname_qs = bytes.decode(os.path.basename(fname))
@@ -213,7 +217,7 @@ def memoized_run(args, trace_childs=True):
 
             prev_dname = dname
 
-        print('access():')
+        print('syscall=access():')
         for fname in sorted(fnames_access, reverse=True):
             dname = os.path.dirname(fname)
             bname_qs = bytes.decode(os.path.basename(fname))
