@@ -46,6 +46,7 @@ def memoized_run(args, trace_childs=True):
     fnames_open_wronly = set()
     fnames_open_rdwr = set()
     fnames_stat = set()
+    fnames_statfs = set()
     fnames_access = set()
 
     with tempfile.NamedTemporaryFile() as out_file:
@@ -80,6 +81,8 @@ def memoized_run(args, trace_childs=True):
                     # in decreasing probability
                     if syscall == b'stat':
                         fnames_stat.add(syscall_fname)
+                    elif syscall == b'statfs':
+                        fnames_statfs.add(syscall_fname)
                     elif syscall == b'open':
                         if out_line.startswith(b'O_RDONLY'): # read-only
                             fnames_open_rdonly.add(syscall_fname)
@@ -92,7 +95,7 @@ def memoized_run(args, trace_childs=True):
                     elif syscall == b'access':
                         fnames_access.add(syscall_fname)
                     else:
-                        print('Handle system call' + syscall_s)
+                        print('Handle system call ' + syscall_s)
 
                     # print(pid, syscall_s, syscall_fname)
 
@@ -117,6 +120,23 @@ def memoized_run(args, trace_childs=True):
                 mtime = os.path.getmtime(fname)
                 print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
             indent -= 1
+
+            prev_dname = dname
+
+        print('statfs():')
+        for fname in sorted(fnames_statfs, reverse=True):
+            dname = os.path.dirname(fname)
+            dname_qs = '"' + bytes.decode(dname) + '/"'
+            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
+
+            if dname != prev_dname:
+                print(_indent_space(indent) + '- ' + dname_qs + ':')
+
+            indent += 1
+            if _is_nonvolatile_existing_file(fname):
+                mtime = os.path.getmtime(fname)
+                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
+                indent -= 1
 
             prev_dname = dname
 
