@@ -57,7 +57,7 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
         bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
         if dname != prev_dname:
-            print(_indent_space(indent) + '- ' + dname_qs + ':')
+            print(_indent_space(indent) + '@ ' + dname_qs + ':')
 
         indent += 1
         if _is_nonvolatile_existing_file(fname):
