@@ -4,3 +4,4 @@ main-compile.strace
 *.o
 *.lst
 __pycache__
+a.out
