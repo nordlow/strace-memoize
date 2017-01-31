@@ -111,32 +111,33 @@ def memoized_run(args, trace_childs=True):
                     syscall_s = bytes.decode(syscall)
                     # print(syscall_s)
 
-                    syscall_fname, out_line = out_line.split(b', ', 1)
-                    syscall_fname = os.path.normpath(syscall_fname[1:-1])
+                    fname, out_line = out_line.split(b', ', 1)
+                    fname = os.path.normpath(fname[1:-1])
+
+                    if fname.startswith(b'//lib') or fname.startswith(b'//lib'):
+                        fname = fname[1:]
 
                     # in decreasing probability
                     if syscall == b'stat':
-                        fnames_stat.add(syscall_fname)
+                        fnames_stat.add(fname)
                     elif syscall == b'statfs':
-                        fnames_statfs.add(syscall_fname)
+                        fnames_statfs.add(fname)
                     elif syscall == b'openat':
-                        fnames_openat.add(syscall_fname)
-                        # print(syscall_fname, out_line)
+                        fnames_openat.add(fname)
+                        # print(fname, out_line)
                     elif syscall == b'open':
                         if out_line.startswith(b'O_RDONLY'): # read-only
-                            fnames_open_rdonly.add(syscall_fname)
+                            fnames_open_rdonly.add(fname)
                         elif out_line.startswith(b'O_WRONLY'): # write-only
-                            fnames_open_wronly.add(syscall_fname)
+                            fnames_open_wronly.add(fname)
                         elif out_line.startswith(b'O_RDWR'): # read-write
-                            fnames_open_rdwr.add(syscall_fname)
+                            fnames_open_rdwr.add(fname)
                         else:
                             assert(False)
                     elif syscall == b'access':
-                        fnames_access.add(syscall_fname)
+                        fnames_access.add(fname)
                     else:
                         print('Handle system call ' + syscall_s)
-
-                    # print(pid, syscall_s, syscall_fname)
 
                 except ValueError:
                     pass
