@@ -77,6 +77,8 @@ def memoized_run(args, trace_childs=True):
 
     indent = 0
 
+    trace = None
+
     fnames_open_rdonly = set()
     fnames_open_wronly = set()
     fnames_open_rdwr = set()
@@ -157,7 +159,7 @@ def memoized_run(args, trace_childs=True):
         _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_open_rdwr, indent=indent)
         _print_syscall_fnames(syscall_s='openat', fnames=fnames_openat, indent=indent)
 
-        return ret
+        return (ret, trace)
 
 
 if __name__ == '__main__':
@@ -168,5 +170,5 @@ if __name__ == '__main__':
         if opt == '-t':
             OPT_USE_MODTIME = True
 
-    completedProcess = memoized_run(args)
+    completedProcess, tree = memoized_run(args)
     sys.exit(completedProcess.returncode)
