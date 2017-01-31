@@ -8,7 +8,6 @@ import re
 import hashlib
 import tempfile
 import pickle                   # cPickle not available in Python3
-
 import json
 
 from pprint import pprint as pp
@@ -27,7 +26,7 @@ HASH_NAME = 'md5'
 
 INDENT_STEP = 2                 # number of spaces per indentation level
 
-include_system_deps = False
+include_system_deps = True
 
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
