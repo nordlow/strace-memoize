@@ -112,7 +112,7 @@ def memoized_run(args, trace_childs=True):
                     # print(syscall_s)
 
                     syscall_fname, out_line = out_line.split(b', ', 1)
-                    syscall_fname = syscall_fname[1:-1]
+                    syscall_fname = os.path.normpath(syscall_fname[1:-1])
 
                     # in decreasing probability
                     if syscall == b'stat':
