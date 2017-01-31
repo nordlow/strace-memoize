@@ -77,7 +77,7 @@ def memoized_run(args, trace_childs=True):
 
     indent = 0
 
-    trace = None
+    trace = None                # trace tree
 
     fnames_open_rdonly = set()
     fnames_open_wronly = set()
