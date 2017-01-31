@@ -41,6 +41,9 @@ def _indent_space(indent):
 
 
 def _print_syscall_fnames(syscall_s, fnames, indent):
+    if (not fnames):
+        return
+
     print('syscall=' + syscall_s + '():')
 
     prev_dname = None
@@ -148,10 +151,10 @@ def memoized_run(args, trace_childs=True):
         _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
         _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
         _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
-        _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
         _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_open_rdonly, indent=indent)
         _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_open_wronly, indent=indent)
         _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_open_rdwr, indent=indent)
+        _print_syscall_fnames(syscall_s='openat', fnames=fnames_openat, indent=indent)
 
         return ret
 
