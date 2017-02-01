@@ -53,7 +53,7 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
                         sorted(fnames, reverse=True)):
 
         dname = os.path.dirname(fname)
-        dname_qs = '"' + bytes.decode(dname) + '/"'
+        dname_qs = '"' + bytes.decode(dname) + '"'
         bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
         if dname != prev_dname:
