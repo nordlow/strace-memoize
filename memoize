@@ -77,6 +77,18 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
 
         prev_dname = dname
 
+
+def chash_update_tree(chash, curr):
+    if (isinstance(curr, str)):
+        chash.update(curr)
+    elif (isinstance(curr, list) or
+          isinstance(curr, tuple)):
+        chash.update(len(curr))
+        for sub in curr:
+            chash_update_tree(chash, sub)
+    else:
+        raise Exception("Handle curr type")
+
 def memoized_run(args, trace_childs=True):
 
     indent = 0
@@ -135,7 +147,9 @@ def memoized_run(args, trace_childs=True):
                         env = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
                         execve_input = (syscall, fname, argv, env)
-                        # TODO execve_input_chash = hashlib.new(HASH_NAME, execve_input)
+                        tree_chash = hashlib.new(HASH_NAME)
+
+                        # TODO chash_update_tree(tree_chash, execve_input)
                         trace.append(execve_input)
 
                     elif syscall == b'stat':
