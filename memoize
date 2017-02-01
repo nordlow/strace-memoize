@@ -31,8 +31,8 @@ include_system_deps = True
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 
-def _is_nonvolatile_existing_file(fname):
-    return fname != b'/dev/urandom' and os.path.exists(fname)
+def _is_content_hashable_file(fname):
+    return not fname.startswith(b'/dev/') and os.path.exists(fname)
 
 
 def _indent_space(indent):
@@ -60,7 +60,7 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
             print(_indent_space(indent) + '@ ' + dname_qs + ':')
 
         indent += 1
-        if _is_nonvolatile_existing_file(fname):
+        if _is_content_hashable_file(fname):
             mtime = os.path.getmtime(fname)
             if syscall_s in ('stat', 'statfs', 'access') or os.path.isdir(fname):
                 print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
