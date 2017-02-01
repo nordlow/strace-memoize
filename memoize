@@ -21,7 +21,7 @@ OPT_USE_MODTIME = False
 # show results
 OPT_VERBOSE = True
 
-SYS_CALLS = ["open", "openat", "stat", "stat64", "statfs", "access"]
+SYS_CALLS = ["execve", "open", "openat", "stat", "stat64", "statfs", "access"]
 SYS_CALLS_AT = ["openat"]       # Linux
 
 # content hashing algorithm
@@ -101,7 +101,6 @@ def memoized_run(args, trace_childs=True):
         sys_calls_flags = ['-e', 'trace=' + ','.join(SYS_CALLS + SYS_CALLS_AT)]
         strace_cmd = ['strace'] + strace_std_flags + outfile_flags + sys_calls_flags + args
 
-        print(strace_cmd)
         ret = subprocess.run(args=strace_cmd, shell=False)
 
         out_file.seek(0)              # reset it
@@ -127,7 +126,13 @@ def memoized_run(args, trace_childs=True):
 
                     # in decreasing probability
                     if syscall == b'execve':
-                        print(fname)
+                        # get args
+                        args, out_line = out_line.split(b'], [', 1)
+                        argv = eval(args[1:])
+
+                        # get environment
+                        env, out_line = out_line.split(b']) = ', 1)
+
                     elif syscall == b'stat':
                         fnames_stat.add(fname)
                     elif syscall == b'statfs':
