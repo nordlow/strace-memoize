@@ -107,17 +107,17 @@ def memoized_run(args, trace_childs=True):
         for out_line in out_file:
             if b'ENOENT' not in out_line: # skip failing calls
 
-                pid_, out_line = out_line.split(None, 1)
+                pid_, out_rest = out_line.split(None, 1)
 
                 pid = int(pid_) # decode PID integer
                 # print(pid)
 
                 try:
-                    syscall, out_line = out_line.split(b'(', 1)
+                    syscall, out_rest = out_rest.split(b'(', 1)
                     syscall_s = bytes.decode(syscall)
                     # print(syscall_s)
 
-                    fname, out_line = out_line.split(b', ', 1)
+                    fname, out_rest = out_rest.split(b', ', 1)
                     fname = os.path.normpath(fname[1:-1])
 
                     if (fname.startswith(b'//usr') or
@@ -127,11 +127,11 @@ def memoized_run(args, trace_childs=True):
                     # in decreasing probability
                     if syscall == b'execve':
                         # get args
-                        args, out_line = out_line.split(b'], [', 1)
+                        args, out_rest = out_rest.split(b'], [', 1)
                         argv = eval(args[1:])
 
                         # get environment
-                        env, out_line = out_line.split(b']) = ', 1)
+                        env, out_rest = out_rest.split(b']) = ', 1)
 
                     elif syscall == b'stat':
                         fnames_stat.add(fname)
@@ -139,13 +139,13 @@ def memoized_run(args, trace_childs=True):
                         fnames_statfs.add(fname)
                     elif syscall == b'openat':
                         fnames_openat.add(fname)
-                        # print(fname, out_line)
+                        # print(fname, out_rest)
                     elif syscall == b'open':
-                        if out_line.startswith(b'O_RDONLY'): # read-only
+                        if out_rest.startswith(b'O_RDONLY'): # read-only
                             fnames_open_rdonly.add(fname)
-                        elif out_line.startswith(b'O_WRONLY'): # write-only
+                        elif out_rest.startswith(b'O_WRONLY'): # write-only
                             fnames_open_wronly.add(fname)
-                        elif out_line.startswith(b'O_RDWR'): # read-write
+                        elif out_rest.startswith(b'O_RDWR'): # read-write
                             fnames_open_rdwr.add(fname)
                         else:
                             assert(False)
