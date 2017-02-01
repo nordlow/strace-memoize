@@ -81,7 +81,7 @@ def memoized_run(args, trace_childs=True):
 
     indent = 0
 
-    trace = None                # trace tree
+    trace = []                  # trace tree
 
     fnames_open_rdonly = set()
     fnames_open_wronly = set()
@@ -133,6 +133,8 @@ def memoized_run(args, trace_childs=True):
                         # get environment
                         _env, out_rest = out_rest.split(b']) = ', 1)
                         env = eval(_env) # tuple of strings containing ENV_VAR=VALE
+
+                        trace.append((syscall, fname, argv, env))
 
                     elif syscall == b'stat':
                         fnames_stat.add(fname)
@@ -188,4 +190,5 @@ if __name__ == '__main__':
             OPT_VERBOSE = True
 
     completedProcess, trace = memoized_run(args)
+    pp(trace)
     sys.exit(completedProcess.returncode)
