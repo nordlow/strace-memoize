@@ -18,6 +18,9 @@ from getopt import getopt
 # if set use modification time instead of content-hash as indentity
 OPT_USE_MODTIME = False
 
+# show results
+OPT_VERBOSE = True
+
 SYS_CALLS = ["open", "openat", "stat", "stat64", "statfs", "access"]
 SYS_CALLS_AT = ["openat"]       # Linux
 
@@ -96,9 +99,10 @@ def memoized_run(args, trace_childs=True):
             strace_std_flags.append('-f')
         outfile_flags = ['-o', out_file.name]
         sys_calls_flags = ['-e', 'trace=' + ','.join(SYS_CALLS + SYS_CALLS_AT)]
-        strace_args = ['strace'] + strace_std_flags + outfile_flags + sys_calls_flags + args
+        strace_cmd = ['strace'] + strace_std_flags + outfile_flags + sys_calls_flags + args
 
-        ret = subprocess.run(args=strace_args, shell=False)
+        print(strace_cmd)
+        ret = subprocess.run(args=strace_cmd, shell=False)
 
         out_file.seek(0)              # reset it
         for out_line in out_file:
@@ -122,7 +126,9 @@ def memoized_run(args, trace_childs=True):
                         fname = fname[1:] # skip first slash
 
                     # in decreasing probability
-                    if syscall == b'stat':
+                    if syscall == b'execve':
+                        print(fname)
+                    elif syscall == b'stat':
                         fnames_stat.add(fname)
                     elif syscall == b'statfs':
                         fnames_statfs.add(fname)
@@ -150,26 +156,30 @@ def memoized_run(args, trace_childs=True):
 
         indent += 1
 
-        print("\n============================= TRACE RESULTS ===================================\n")
+        if OPT_VERBOSE:
 
-        _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
-        _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
-        _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
-        _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_open_rdonly, indent=indent)
-        _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_open_wronly, indent=indent)
-        _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_open_rdwr, indent=indent)
-        _print_syscall_fnames(syscall_s='openat', fnames=fnames_openat, indent=indent)
+            print("\n============================= TRACE RESULTS ===================================\n")
+
+            _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
+            _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
+            _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
+            _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_open_rdonly, indent=indent)
+            _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_open_wronly, indent=indent)
+            _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_open_rdwr, indent=indent)
+            _print_syscall_fnames(syscall_s='openat', fnames=fnames_openat, indent=indent)
 
         return (ret, trace)
 
 
 if __name__ == '__main__':
 
-    opts, args = getopt(sys.argv[1:], 'td:')
+    opts, args = getopt(sys.argv[1:], 'tdv:')
 
     for opt, value in opts:
         if opt == '-t':
             OPT_USE_MODTIME = True
+        if opt == '-v':
+            OPT_VERBOSE = True
 
     completedProcess, tree = memoized_run(args)
     sys.exit(completedProcess.returncode)
