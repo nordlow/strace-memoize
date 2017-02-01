@@ -125,7 +125,7 @@ def memoized_run(args, trace_childs=True):
         out_file.seek(0)              # reset it
         for out_line in out_file:
             if b'ENOENT' not in out_line: # skip failing calls
-                print(out_line)
+                # print(out_line)
 
                 pid_, out_rest = out_line.split(None, 1)
 
