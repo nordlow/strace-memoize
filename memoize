@@ -127,11 +127,12 @@ def memoized_run(args, trace_childs=True):
                     # in decreasing probability
                     if syscall == b'execve':
                         # get args
-                        args, out_rest = out_rest.split(b'], [', 1)
-                        argv = eval(args[1:])
+                        _args, out_rest = out_rest.split(b'], [', 1)
+                        argv = eval(_args[1:]) # tuple of strings
 
                         # get environment
-                        env, out_rest = out_rest.split(b']) = ', 1)
+                        _env, out_rest = out_rest.split(b']) = ', 1)
+                        env = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
                     elif syscall == b'stat':
                         fnames_stat.add(fname)
