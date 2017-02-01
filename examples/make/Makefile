@@ -1,4 +1,4 @@
-LD=ld.gold
+LD=ld				# either ld or ld.gold
 CC=gcc
 CFLAGS=-Wall -Wextra
 
