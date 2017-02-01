@@ -41,7 +41,7 @@ def _indent_space(indent):
 
 
 def _print_syscall_fnames(syscall_s, fnames, indent):
-    if (not fnames):
+    if not fnames:
         return
 
     print('syscall=' + syscall_s + '():')
