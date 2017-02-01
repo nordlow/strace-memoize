@@ -1,10 +1,11 @@
 LD=ld.gold
 CC=gcc
+CFLAGS=-Wall -Wextra
 
 main: Makefile main.o
 	$(LD) main.o -o $@
 main.o: Makefile main.c
-	$(CC) -c -Wall -Wextra main.c -o $@
+	$(CC) -c $(CFLAGS) main.c -o $@
 
 clean:
 	$(RM) main main.o
