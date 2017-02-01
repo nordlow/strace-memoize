@@ -152,7 +152,7 @@ def memoized_run(args, trace_childs=True):
                         tree_chash = hashlib.new(HASH_NAME)
 
                         chash_update_tree(tree_chash, execve_input)
-                        # pp(tree_chash.hexdigest())
+                        # TODO use pp(tree_chash.hexdigest())
                         trace.append(execve_input)
 
                     elif syscall == b'stat':
