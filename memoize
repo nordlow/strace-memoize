@@ -134,7 +134,9 @@ def memoized_run(args, trace_childs=True):
                         _env, out_rest = out_rest.split(b']) = ', 1)
                         env = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
-                        trace.append((syscall, fname, argv, env))
+                        execve_input = (syscall, fname, argv, env)
+                        # TODO execve_input_chash = hashlib.new(HASH_NAME, execve_input)
+                        trace.append(execve_input)
 
                     elif syscall == b'stat':
                         fnames_stat.add(fname)
