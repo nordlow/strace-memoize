@@ -187,5 +187,5 @@ if __name__ == '__main__':
         if opt == '-v':
             OPT_VERBOSE = True
 
-    completedProcess, tree = memoized_run(args)
+    completedProcess, trace = memoized_run(args)
     sys.exit(completedProcess.returncode)
