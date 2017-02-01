@@ -79,13 +79,13 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
 
 
 def chash_update_tree(chash, curr):
-    if (isinstance(curr, str)):
+    if (isinstance(curr, bytes)):
         chash.update(curr)
-    elif (isinstance(curr, unicode)):
-        chash.update(curr)
+    elif (isinstance(curr, str)):
+        chash.update(curr.encode('utf-8'))
     elif (isinstance(curr, list) or
           isinstance(curr, tuple)):
-        chash.update(len(curr))
+        chash.update(repr(len(curr)).encode('utf-8'))
         for sub in curr:
             chash_update_tree(chash, sub)
     else:
@@ -151,7 +151,8 @@ def memoized_run(args, trace_childs=True):
                         execve_input = (syscall, fname, argv, env)
                         tree_chash = hashlib.new(HASH_NAME)
 
-                        # TODO chash_update_tree(tree_chash, execve_input)
+                        chash_update_tree(tree_chash, execve_input)
+                        # pp(tree_chash.hexdigest())
                         trace.append(execve_input)
 
                     elif syscall == b'stat':
