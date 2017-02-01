@@ -32,6 +32,7 @@ SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 
 def _is_content_hashable_file(fname):
+    """Check if FNAME is a file whose contents can be read and hashed."""
     return not fname.startswith(b'/dev/') and os.path.exists(fname)
 
 
