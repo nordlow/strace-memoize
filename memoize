@@ -208,5 +208,5 @@ if __name__ == '__main__':
             OPT_VERBOSE = True
 
     completedProcess, trace = memoized_run(args)
-    pp(trace)
+    # pp(trace)
     sys.exit(completedProcess.returncode)
