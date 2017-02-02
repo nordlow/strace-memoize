@@ -116,6 +116,7 @@ def memoized_run(args, trace_childs=True):
     fnames_access = set()
 
     first_execve_input = None
+    first_execve_chash = hashlib.new(HASH_NAME)
 
     with tempfile.NamedTemporaryFile() as out_file:
 
@@ -164,11 +165,9 @@ def memoized_run(args, trace_childs=True):
                         execve_input = (syscall, fname, argv, env)
                         if first_execve_input is None:
                             first_execve_input = execve_input
+                            chash_update_tree(first_execve_chash, execve_input)
+                            pp(first_execve_chash.hexdigest())
 
-                        tree_chash = hashlib.new(HASH_NAME)
-
-                        chash_update_tree(tree_chash, execve_input)
-                        # TODO use pp(tree_chash.hexdigest())
                         trace.append(execve_input)
 
                     elif syscall == b'stat':
