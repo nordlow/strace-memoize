@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+# TODO ask on StackExchange if there's a flag to strace to not show failing system calls
 # TODO use gcc -pipe
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
@@ -113,6 +114,7 @@ def chash_update_tree(chash, curr):
 
 
 def store_in_cache(execve_call, fnames_all):
+    pp(fnames_all)
 
     # store
     first_execve_chash = hashlib.new(HASH_NAME)
