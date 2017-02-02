@@ -38,6 +38,9 @@ include_system_deps = True
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 
+def dir_is_modified_since(fname, mtime):
+    return os.path.getmtime(fname) != mtime # robust to NFS time skews
+
 def file_is_modified_since(fname, mtime, chash):
     if os.path.getmtime(fname) != mtime: # robust to NFS time skews
         return hashlib.new(HASH_NAME, open(fname, 'rb').read) != chash
