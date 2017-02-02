@@ -38,6 +38,13 @@ include_system_deps = True
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 
+def file_has_changed(fname, mtime, chash):
+    if os.path.getmtime(fname) != mtime: # robust to NFS time skews
+        return hashlib.new(HASH_NAME, open(fname, 'rb').read) != chash
+    else:
+        return False
+
+
 def _is_content_hashable_file(fname):
     """Check if FNAME is a file whose contents can be read and hashed."""
     return not fname.startswith(b'/dev/') and os.path.exists(fname)
@@ -78,8 +85,7 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
                 if syscall_s in ('stat', 'statfs', 'access') or os.path.isdir(fname):
                     print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
                 else:
-                    cdata = open(fname, 'rb').read()
-                    chash = hashlib.new(HASH_NAME, cdata)
+                    chash = hashlib.new(HASH_NAME, open(fname, 'rb').read())
                     chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
                     print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
             indent -= 1
@@ -102,10 +108,11 @@ def chash_update_tree(chash, curr):
         raise Exception("Handle curr type")
 
 
-def store_in_cache(execve_input):
+def store_in_cache(execve_call):
+
     # store
     first_execve_chash = hashlib.new(HASH_NAME)
-    chash_update_tree(first_execve_chash, execve_input)
+    chash_update_tree(first_execve_chash, execve_call)
     hexdigest = first_execve_chash.hexdigest()
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
@@ -128,7 +135,7 @@ def memoized_run(args, trace_childs=True):
     fnames_openat = set()
     fnames_access = set()
 
-    first_execve_input = None
+    first_execve_call = None
 
     with tempfile.NamedTemporaryFile() as out_file:
 
@@ -175,10 +182,10 @@ def memoized_run(args, trace_childs=True):
                         env = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
                         # store and fingerprint
-                        execve_input = (syscall, fname, argv, env)
-                        if first_execve_input is None:
-                            first_execve_input = execve_input
-                        trace.append(execve_input)
+                        execve_call = (syscall, fname, argv, env)
+                        if first_execve_call is None:
+                            first_execve_call = execve_call
+                        trace.append(execve_call)
 
                     elif syscall == b'stat':
                         fnames_stat.add(fname)
@@ -204,7 +211,7 @@ def memoized_run(args, trace_childs=True):
                 except ValueError:
                     pass
 
-        store_in_cache(first_execve_input)
+        store_in_cache(first_execve_call)
 
         if OPT_VERBOSE:
 
