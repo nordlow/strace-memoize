@@ -122,7 +122,9 @@ def store_in_cache(execve_call, fnames_all):
 
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
-                                  hexdigest[0:2], hexdigest[2:4], hexdigest[4:])
+                                  hexdigest[0:2],
+                                  hexdigest[2:4],
+                                  hexdigest[4:])
     pp(cache_dir_path)
     os.makedirs(name=cache_dir_path, exist_ok=True)
 
@@ -165,7 +167,8 @@ def memoized_run(args, trace_childs=True):
         if trace_childs:
             strace_std_flags.append('-f')
         outfile_flags = ['-o', out_file.name]
-        sys_calls_flags = ['-e', 'trace=' + ','.join(SYS_CALLS + SYS_CALLS_AT)]
+        sys_calls_flags = ['-e', 'trace=' +
+                           ','.join(SYS_CALLS + SYS_CALLS_AT)]
         strace_cmd = ['strace'] + strace_std_flags + outfile_flags + sys_calls_flags + args
 
         ret = subprocess.run(args=strace_cmd, shell=False)
