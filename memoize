@@ -137,8 +137,8 @@ def memoized_run(args, trace_childs=True):
     fnames_all['open_rdwr'] = set()
     fnames_all['stat'] = set()
     fnames_all['statfs'] = set()
-    fnames_openat = set()
-    fnames_access = set()
+    fnames_all['openat'] = set()
+    fnames_all['access'] = set()
 
     first_execve_call = None
 
@@ -197,7 +197,7 @@ def memoized_run(args, trace_childs=True):
                     elif syscall == b'statfs':
                         fnames_all['statfs'].add(fname)
                     elif syscall == b'openat':
-                        fnames_openat.add(fname)
+                        fnames_all['openat'].add(fname)
                         # print(fname, out_rest)
                     elif syscall == b'open':
                         if out_rest.startswith(b'O_RDONLY'): # read-only
@@ -209,7 +209,7 @@ def memoized_run(args, trace_childs=True):
                         else:
                             assert(False)
                     elif syscall == b'access':
-                        fnames_access.add(fname)
+                        fnames_all['access'].add(fname)
                     else:
                         print('Handle system call ' + syscall_s)
 
@@ -226,11 +226,11 @@ def memoized_run(args, trace_childs=True):
                 indent += 1
                 _print_syscall_fnames(syscall_s='stat', fnames=fnames_all['stat'], indent=indent)
                 _print_syscall_fnames(syscall_s='statfs', fnames=fnames_all['statfs'], indent=indent)
-                _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
+                _print_syscall_fnames(syscall_s='access', fnames=fnames_all['access'], indent=indent)
                 _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_all['open_rdonly'], indent=indent)
                 _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_all['open_wronly'], indent=indent)
                 _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_all['open_rdwr'], indent=indent)
-                _print_syscall_fnames(syscall_s='openat', fnames=fnames_openat, indent=indent)
+                _print_syscall_fnames(syscall_s='openat', fnames=fnames_all['openat'], indent=indent)
 
         return (ret, trace)
 
