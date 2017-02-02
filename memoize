@@ -207,7 +207,7 @@ def memoized_run(args, trace_childs=True):
                         elif out_rest.startswith(b'O_RDWR'): # read-write
                             fnames_all['open_rdwr'].add(fname)
                         else:
-                            assert(False)
+                            raise Exception('unknown out_rest' + str(out_rest))
                     elif syscall == b'access':
                         fnames_all['access'].add(fname)
                     else:
