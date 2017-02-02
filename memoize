@@ -101,6 +101,19 @@ def chash_update_tree(chash, curr):
     else:
         raise Exception("Handle curr type")
 
+
+def store_in_cache(execve_input):
+    # store
+    first_execve_chash = hashlib.new(HASH_NAME)
+    chash_update_tree(first_execve_chash, execve_input)
+    hexdigest = first_execve_chash.hexdigest()
+    cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
+                                  'memoize',
+                                  hexdigest[0:2], hexdigest[2:4], hexdigest[4:])
+    pp(cache_dir_path)
+    os.makedirs(name=cache_dir_path, exist_ok=True)
+
+
 def memoized_run(args, trace_childs=True):
 
     indent = 0
@@ -116,7 +129,6 @@ def memoized_run(args, trace_childs=True):
     fnames_access = set()
 
     first_execve_input = None
-    first_execve_chash = hashlib.new(HASH_NAME)
 
     with tempfile.NamedTemporaryFile() as out_file:
 
@@ -166,13 +178,6 @@ def memoized_run(args, trace_childs=True):
                         execve_input = (syscall, fname, argv, env)
                         if first_execve_input is None:
                             first_execve_input = execve_input
-                            chash_update_tree(first_execve_chash, execve_input)
-                            hexdigest = first_execve_chash.hexdigest()
-                            cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
-                                                          'memoize',
-                                                          hexdigest[0:2], hexdigest[2:4], hexdigest[4:])
-                            pp(cache_dir_path)
-                            os.makedirs(name=cache_dir_path, exist_ok=True)
                         trace.append(execve_input)
 
                     elif syscall == b'stat':
@@ -199,15 +204,14 @@ def memoized_run(args, trace_childs=True):
                 except ValueError:
                     pass
 
-        prev_dname = None
-
-        indent += 1
+        store_in_cache(execve_input)
 
         if OPT_VERBOSE:
 
             print("\n============================= TRACE RESULTS ===================================\n")
 
             if OPT_VERBOSE:
+                indent += 1
                 _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
                 _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
                 _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
