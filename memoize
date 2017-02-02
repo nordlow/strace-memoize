@@ -22,7 +22,7 @@ from getopt import getopt
 OPT_USE_MODTIME = False
 
 # show results
-OPT_VERBOSE = True
+OPT_VERBOSE = 'raw'
 
 SYS_CALLS = ["execve", "open", "openat", "stat", "stat64", "statfs", "access"]
 RAW_CALLS = ["stat"]
@@ -51,35 +51,40 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
     if not fnames:
         return
 
-    print('syscall=' + syscall_s + '():')
+    if OPT_VERBOSE == 'raw':
+        print(syscall_s + ':')
+        for fname in sorted(fnames):
+            print(fname)
+    else:
+        print('syscall=' + syscall_s + '():')
 
-    prev_dname = None
+        prev_dname = None
 
-    for fname in filter(lambda fname: (include_system_deps or
-                                       not (re.match(pattern=SYSTEM_FILE_RE,
-                                                     string=bytes.decode(fname)))),
-                        sorted(fnames, reverse=True)):
+        for fname in filter(lambda fname: (include_system_deps or
+                                           not (re.match(pattern=SYSTEM_FILE_RE,
+                                                         string=bytes.decode(fname)))),
+                            sorted(fnames, reverse=True)):
 
-        dname = os.path.dirname(fname)
-        dname_qs = '"' + bytes.decode(dname) + '"'
-        bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
+            dname = os.path.dirname(fname)
+            dname_qs = '"' + bytes.decode(dname) + '"'
+            bname_qs = '"' + bytes.decode(os.path.basename(fname)) + '"'
 
-        if dname != prev_dname:
-            print(_indent_space(indent) + '@ ' + dname_qs + ':')
+            if dname != prev_dname:
+                print(_indent_space(indent) + '@ ' + dname_qs + ':')
 
-        indent += 1
-        if _is_content_hashable_file(fname):
-            mtime = os.path.getmtime(fname)
-            if syscall_s in ('stat', 'statfs', 'access') or os.path.isdir(fname):
-                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
-            else:
-                cdata = open(fname, 'rb').read()
-                chash = hashlib.new(HASH_NAME, cdata)
-                chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
-                print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
-        indent -= 1
+            indent += 1
+            if _is_content_hashable_file(fname):
+                mtime = os.path.getmtime(fname)
+                if syscall_s in ('stat', 'statfs', 'access') or os.path.isdir(fname):
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime))
+                else:
+                    cdata = open(fname, 'rb').read()
+                    chash = hashlib.new(HASH_NAME, cdata)
+                    chash_s = ' ' + HASH_NAME + "=" + chash.hexdigest()
+                    print(_indent_space(indent) + '- ' + bname_qs + ': mtime=' + str(mtime) + chash_s)
+            indent -= 1
 
-        prev_dname = dname
+            prev_dname = dname
 
 
 def chash_update_tree(chash, curr):
@@ -193,13 +198,14 @@ def memoized_run(args, trace_childs=True):
 
             print("\n============================= TRACE RESULTS ===================================\n")
 
-            _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
-            _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
-            _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
-            _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_open_rdonly, indent=indent)
-            _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_open_wronly, indent=indent)
-            _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_open_rdwr, indent=indent)
-            _print_syscall_fnames(syscall_s='openat', fnames=fnames_openat, indent=indent)
+            if OPT_VERBOSE:
+                _print_syscall_fnames(syscall_s='stat', fnames=fnames_stat, indent=indent)
+                _print_syscall_fnames(syscall_s='statfs', fnames=fnames_statfs, indent=indent)
+                _print_syscall_fnames(syscall_s='access', fnames=fnames_access, indent=indent)
+                _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_open_rdonly, indent=indent)
+                _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_open_wronly, indent=indent)
+                _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_open_rdwr, indent=indent)
+                _print_syscall_fnames(syscall_s='openat', fnames=fnames_openat, indent=indent)
 
         return (ret, trace)
 
