@@ -114,13 +114,6 @@ def chash_update_tree(chash, curr):
 
 
 def store_in_cache(execve_call, fnames_all):
-    for (syscall, fnames) in fnames_all.items():
-        for fname in fnames:
-            if not re.match(pattern=SYSTEM_FILE_RE,
-                            string=bytes.decode(fname)):
-                pp(fname)
-
-
     # store
     first_execve_chash = hashlib.new(HASH_NAME)
 
@@ -133,9 +126,19 @@ def store_in_cache(execve_call, fnames_all):
     pp(cache_dir_path)
     os.makedirs(name=cache_dir_path, exist_ok=True)
 
+    # fingerprint inputs
+    input_chash = hashlib.new(HASH_NAME)
+    inputs_data = b''
+    for (syscall, fnames) in fnames_all.items():
+        for fname in fnames:
+            if not re.match(pattern=SYSTEM_FILE_RE,
+                            string=bytes.decode(fname)):
+                inputs_data += fname + b'\n'
+                pp((syscall, fname))
+
     inputs_path = os.path.join(cache_dir_path, "inputs")
     with open(inputs_path, 'wb') as out_file:
-        pass
+        out_file.write(inputs_data)
 
 
 def memoized_run(args, trace_childs=True):
