@@ -22,7 +22,7 @@ from getopt import getopt
 OPT_USE_MODTIME = False
 
 # show results
-OPT_VERBOSE = 'raw'
+OPT_VERBOSE = False # False, True, 'raw'
 
 SYS_CALLS = ["execve", "open", "openat", "stat", "stat64", "statfs", "access"]
 RAW_CALLS = ["stat"]
