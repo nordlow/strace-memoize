@@ -114,17 +114,22 @@ def chash_update_tree(chash, curr):
 
 
 def store_in_cache(execve_call, fnames_all):
-    pp(fnames_all)
+    # pp(fnames_all)
 
     # store
     first_execve_chash = hashlib.new(HASH_NAME)
+
     chash_update_tree(first_execve_chash, execve_call)
     hexdigest = first_execve_chash.hexdigest()
+
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
                                   hexdigest[0:2], hexdigest[2:4], hexdigest[4:])
     pp(cache_dir_path)
     os.makedirs(name=cache_dir_path, exist_ok=True)
+
+    with open(os.path.join(cache_dir_path, "input_files"), 'wb') as out_file:
+        pass
 
 
 def memoized_run(args, trace_childs=True):
