@@ -116,12 +116,10 @@ def chash_update_tree(chash, curr):
 def store_in_cache(execve_call, fnames_all):
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
-            if not (fname.startswith(b'/usr') or
-                    fname.startswith(b'/lib') or
-                    fname.startswith(b'/tmp') or
-                    fname.startswith(b'/dev') or
-                    fname.startswith(b'/etc')):
+            if not re.match(pattern=SYSTEM_FILE_RE,
+                            string=bytes.decode(fname)):
                 pp(fname)
+
 
     # store
     first_execve_chash = hashlib.new(HASH_NAME)
