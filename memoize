@@ -115,6 +115,8 @@ def memoized_run(args, trace_childs=True):
     fnames_openat = set()
     fnames_access = set()
 
+    first_execve_input = None
+
     with tempfile.NamedTemporaryFile() as out_file:
 
         # collect flags
@@ -160,6 +162,9 @@ def memoized_run(args, trace_childs=True):
                         env = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
                         execve_input = (syscall, fname, argv, env)
+                        if first_execve_input is None:
+                            first_execve_input = execve_input
+
                         tree_chash = hashlib.new(HASH_NAME)
 
                         chash_update_tree(tree_chash, execve_input)
