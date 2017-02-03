@@ -118,27 +118,33 @@ def store_in_cache(execve_call, fnames_all):
     first_execve_chash = hashlib.new(HASH_NAME)
 
     chash_update_tree(first_execve_chash, execve_call)
-    hexdigest = first_execve_chash.hexdigest()
+    first_execve_hexdigest = first_execve_chash.hexdigest()
 
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
-                                  hexdigest[0:2],
-                                  hexdigest[2:4],
-                                  hexdigest[4:])
+                                  first_execve_hexdigest[0:2],
+                                  first_execve_hexdigest[2:4],
+                                  first_execve_hexdigest[4:])
     pp(cache_dir_path)
     os.makedirs(name=cache_dir_path, exist_ok=True)
 
     # fingerprint inputs
     input_chash = hashlib.new(HASH_NAME)
-    inputs = []
+    inputs = {}
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
             if not re.match(pattern=SYSTEM_FILE_RE,
                             string=bytes.decode(fname)):
-                inputs.append(fname)
-                pp((syscall, fname))
+                if syscall in ['stat', 'statfs', 'access']:
+                    inputs[fname] = os.path.getmtime(fname)
+                elif syscall in ['open_rdonly',
+                                 'open_wronly',
+                                 'open_rdwr']:
+                    inputs[fname] = (os.path.getmtime(fname),
+                                     hashlib.new(HASH_NAME,
+                                                 open(fname, 'rb').read()).hexdigest())
 
-    pp(sorted(inputs))
+    pp(sorted(inputs.items()))
 
     inputs_path = os.path.join(cache_dir_path, "inputs")
     with open(inputs_path, 'wb') as out_file:
