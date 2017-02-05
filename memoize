@@ -142,8 +142,8 @@ def store_in_cache(execve_call, fnames_all):
     inputs_chash = hashlib.new(HASH_NAME)
 
     # get inputs and outputs
-    inputs_list = {}   # read and written file names => mtime and optional chash
-    outputs_list = set()        # written file names
+    rw_list = {}   # read and written file names => mtime and optional chash
+    w_list = set()        # written file names
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
             if not re.match(pattern=SYSTEM_FILE_RE,
@@ -153,34 +153,34 @@ def store_in_cache(execve_call, fnames_all):
                     continue
 
                 if syscall in ['stat', 'statfs', 'access']:
-                    if fname not in inputs_list:
-                        inputs_list[fname] = os.path.getmtime(fname)
+                    if fname not in rw_list:
+                        rw_list[fname] = os.path.getmtime(fname)
                 elif syscall in ['open_rdonly',
                                  'open_wronly',
                                  'open_rdwr']:
-                    inputs_list[fname] = (os.path.getmtime(fname),
+                    rw_list[fname] = (os.path.getmtime(fname),
                                           hashlib.new(HASH_NAME,
                                                       open(fname, 'rb').read()).hexdigest())
                     if syscall in ['open_wronly',
                                    'open_rdwr']:
-                        outputs_list.add(fname)
+                        w_list.add(fname)
 
-    # exclude keys in inputs_list that are in outputs_list
+    # exclude keys in rw_list that are in w_list
 
     chash_update_tree(inputs_chash,
-                      filter(lambda x: x[0] not in outputs_list,
-                             inputs_list.items()))
+                      filter(lambda x: x[0] not in w_list,
+                             rw_list.items()))
 
-    # pp(sorted(inputs_list.items()))
+    # pp(sorted(rw_list.items()))
 
     inputs_hexdigest = inputs_chash.hexdigest()
     # print("inputs_hexdigest:", inputs_hexdigest)
 
     separator = b'	'       # tab
 
-    inputs_mtime_chash_path = os.path.join(cache_dir_path, "inputs_list." + inputs_hexdigest)
+    inputs_mtime_chash_path = os.path.join(cache_dir_path, "rw_list." + inputs_hexdigest)
     with open(inputs_mtime_chash_path, 'wb') as out_file:
-        for input_file, input_status in inputs_list.items():
+        for input_file, input_status in rw_list.items():
             if isinstance(input_status, tuple):
                 out_file.write(input_file +
                                separator +
