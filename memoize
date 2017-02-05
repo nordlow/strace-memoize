@@ -121,6 +121,7 @@ def chash_update_tree(chash, curr):
 
 
 def store_in_cache(execve_call, fnames_all):
+
     # store
     first_execve_chash = hashlib.new(HASH_NAME)
 
@@ -161,6 +162,7 @@ def store_in_cache(execve_call, fnames_all):
 
     # exclude keys in inputs_list that are in outputs_list
 
+    print(type(inputs_list.items()))
 
     chash_update_tree(inputs_chash, inputs_list)
 
