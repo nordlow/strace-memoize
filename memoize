@@ -217,11 +217,11 @@ def memoized_run(args, trace_childs=True):
     fnames_all = {}
     fnames_all['open_rdonly'] = set()
     fnames_all['open_wronly'] = set()
-    fnames_all['open_rdwr'] = set()
-    fnames_all['stat'] = set()
-    fnames_all['statfs'] = set()
-    fnames_all['openat'] = set()
-    fnames_all['access'] = set()
+    fnames_all['open_rdwr']   = set()
+    fnames_all['stat']        = set()
+    fnames_all['statfs']      = set()
+    fnames_all['openat']      = set()
+    fnames_all['access']      = set()
 
     first_execve_call = None
 
