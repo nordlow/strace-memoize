@@ -109,6 +109,13 @@ def chash_update_tree(chash, curr):
         chash.update(repr(len(curr)).encode('utf-8'))
         for sub in curr:
             chash_update_tree(chash, sub)
+    elif (isinstance(curr, dict)):
+        chash.update(repr(len(curr)).encode('utf-8'))
+        for sub_key, sub_value in curr.items():
+            chash_update_tree(chash, sub_key)
+            chash_update_tree(chash, sub_value)
+    elif (isinstance(curr, float)):
+        chash.update(str(curr).encode('utf-8'))
     else:
         raise Exception("Handle curr type")
 
@@ -129,7 +136,7 @@ def store_in_cache(execve_call, fnames_all):
     os.makedirs(name=cache_dir_path, exist_ok=True)
 
     # fingerprint inputs
-    input_chash = hashlib.new(HASH_NAME)
+    inputs_chash = hashlib.new(HASH_NAME)
 
     inputs_mtime = {}
     inputs_mtime_chash = {}
@@ -147,6 +154,8 @@ def store_in_cache(execve_call, fnames_all):
                                                  hashlib.new(HASH_NAME,
                                                              open(fname, 'rb').read()).hexdigest())
 
+    chash_update_tree(inputs_chash, inputs_mtime)
+    chash_update_tree(inputs_chash, inputs_mtime_chash)
     pp(sorted(inputs_mtime.items()))
     pp(sorted(inputs_mtime_chash.items()))
 
