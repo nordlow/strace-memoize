@@ -138,35 +138,32 @@ def store_in_cache(execve_call, fnames_all):
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
 
-    inputs_mtime = {}
-    inputs_mtime_chash = {}
+    inputs_list = {}
 
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
             if not re.match(pattern=SYSTEM_FILE_RE,
                             string=bytes.decode(fname)):
+                if os.path.isdir(fname):
+                    continue
                 if syscall in ['stat', 'statfs', 'access']:
-                    inputs_mtime[fname] = os.path.getmtime(fname)
+                    if fname not in inputs_list:
+                        inputs_list[fname] = os.path.getmtime(fname)
                 elif syscall in ['open_rdonly',
                                  'open_wronly',
                                  'open_rdwr']:
-                    inputs_mtime_chash[fname] = (os.path.getmtime(fname),
-                                                 hashlib.new(HASH_NAME,
-                                                             open(fname, 'rb').read()).hexdigest())
+                    inputs_list[fname] = (os.path.getmtime(fname),
+                                          hashlib.new(HASH_NAME,
+                                                      open(fname, 'rb').read()).hexdigest())
 
-    chash_update_tree(inputs_chash, inputs_mtime)
-    chash_update_tree(inputs_chash, inputs_mtime_chash)
+    chash_update_tree(inputs_chash, inputs_list)
 
-    pp(sorted(inputs_mtime.items()))
-    pp(sorted(inputs_mtime_chash.items()))
+    pp(sorted(inputs_list.items()))
+    pp(inputs_chash.hexdigest())
 
-    inputs_mtime_path = os.path.join(cache_dir_path, "inputs_mtime")
-    with open(inputs_mtime_path, 'wb') as out_file:
-        out_file.write(inputs_mtime)
-
-    inputs_mtime_chash_path = os.path.join(cache_dir_path, "inputs_mtime_chash")
+    inputs_mtime_chash_path = os.path.join(cache_dir_path, "inputs_list")
     with open(inputs_mtime_chash_path, 'wb') as out_file:
-        out_file.write(inputs_mtime)
+        out_file.write(inputs_list)
 
 
 def memoized_run(args, trace_childs=True):
