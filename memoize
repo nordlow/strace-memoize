@@ -156,13 +156,17 @@ def store_in_cache(execve_call, fnames_all):
 
     chash_update_tree(inputs_chash, inputs_mtime)
     chash_update_tree(inputs_chash, inputs_mtime_chash)
+
     pp(sorted(inputs_mtime.items()))
     pp(sorted(inputs_mtime_chash.items()))
 
-    inputs_path = os.path.join(cache_dir_path, "inputs")
-    with open(inputs_path, 'wb') as out_file:
-        pass
-        # out_file.write(inputs_data)
+    inputs_mtime_path = os.path.join(cache_dir_path, "inputs_mtime")
+    with open(inputs_mtime_path, 'wb') as out_file:
+        out_file.write(inputs_mtime)
+
+    inputs_mtime_chash_path = os.path.join(cache_dir_path, "inputs_mtime_chash")
+    with open(inputs_mtime_chash_path, 'wb') as out_file:
+        out_file.write(inputs_mtime)
 
 
 def memoized_run(args, trace_childs=True):
