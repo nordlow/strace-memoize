@@ -171,7 +171,8 @@ def store_in_cache(execve_call, fnames_all):
                                separator +
                                str(input_status[0]).encode('utf-8') +
                                separator +
-                               input_status[1].encode('utf-8') + b'\n')
+                               input_status[1].encode('utf-8') +
+                               b'\n')
             else:
                 out_file.write(input_file +
                                separator +
