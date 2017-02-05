@@ -130,21 +130,25 @@ def store_in_cache(execve_call, fnames_all):
 
     # fingerprint inputs
     input_chash = hashlib.new(HASH_NAME)
-    inputs = {}
+
+    inputs_mtime = {}
+    inputs_mtime_chash = {}
+
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
             if not re.match(pattern=SYSTEM_FILE_RE,
                             string=bytes.decode(fname)):
                 if syscall in ['stat', 'statfs', 'access']:
-                    inputs[fname] = os.path.getmtime(fname)
+                    inputs_mtime[fname] = os.path.getmtime(fname)
                 elif syscall in ['open_rdonly',
                                  'open_wronly',
                                  'open_rdwr']:
-                    inputs[fname] = (os.path.getmtime(fname),
-                                     hashlib.new(HASH_NAME,
-                                                 open(fname, 'rb').read()).hexdigest())
+                    inputs_mtime_chash[fname] = (os.path.getmtime(fname),
+                                                 hashlib.new(HASH_NAME,
+                                                             open(fname, 'rb').read()).hexdigest())
 
-    pp(sorted(inputs.items()))
+    pp(sorted(inputs_mtime.items()))
+    pp(sorted(inputs_mtime_chash.items()))
 
     inputs_path = os.path.join(cache_dir_path, "inputs")
     with open(inputs_path, 'wb') as out_file:
