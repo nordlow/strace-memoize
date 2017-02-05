@@ -131,12 +131,14 @@ def store_in_cache(execve_call, fnames_all):
     chash_update_tree(first_execve_chash, execve_call)
     first_execve_hexdigest = first_execve_chash.hexdigest()
 
+    # create cache directory path
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
                                   first_execve_hexdigest[0:2],
                                   first_execve_hexdigest[2:4],
                                   first_execve_hexdigest[4:])
     os.makedirs(name=cache_dir_path, exist_ok=True)
+    # print("cache_dir_path:", cache_dir_path)
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
