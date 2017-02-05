@@ -214,6 +214,7 @@ def memoized_run(args, trace_childs=True):
 
     trace = []                  # trace tree
 
+    # hash from system call name to call instances set
     fnames_all = {}
     fnames_all['open_rdonly'] = set()
     fnames_all['open_wronly'] = set()
