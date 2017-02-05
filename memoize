@@ -132,7 +132,6 @@ def store_in_cache(execve_call, fnames_all):
                                   first_execve_hexdigest[0:2],
                                   first_execve_hexdigest[2:4],
                                   first_execve_hexdigest[4:])
-    pp(cache_dir_path)
     os.makedirs(name=cache_dir_path, exist_ok=True)
 
     # fingerprint inputs
