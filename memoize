@@ -163,7 +163,7 @@ def store_in_cache(execve_call, fnames_all):
 
     separator = b'	'       # tab
 
-    inputs_mtime_nchash_path = os.path.join(cache_dir_path, "inputs_list." + inputs_hexdigest)
+    inputs_mtime_chash_path = os.path.join(cache_dir_path, "inputs_list." + inputs_hexdigest)
     with open(inputs_mtime_chash_path, 'wb') as out_file:
         for input_file, input_status in inputs_list.items():
             if isinstance(input_status, tuple):
