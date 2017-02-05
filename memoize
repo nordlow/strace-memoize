@@ -118,7 +118,7 @@ def chash_update_tree(chash, curr):
         chash.update(str(curr).encode('utf-8'))
     elif (isinstance(curr, filter)):
         for sub in curr:
-            pp(sub)
+            chash_update_tree(chash, sub)
     else:
         raise Exception("Handle curr type")
 
@@ -171,10 +171,10 @@ def store_in_cache(execve_call, fnames_all):
                       filter(lambda x: x[0] not in outputs_list,
                              inputs_list.items()))
 
-    pp(sorted(inputs_list.items()))
+    # pp(sorted(inputs_list.items()))
 
     inputs_hexdigest = inputs_chash.hexdigest()
-    pp(inputs_hexdigest)
+    # print("inputs_hexdigest:", inputs_hexdigest)
 
     separator = b'	'       # tab
 
