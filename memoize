@@ -7,6 +7,8 @@
 
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
+# TODO Replace encode('utf-8') => encode('ascii')
+
 import sys
 import os
 import subprocess
