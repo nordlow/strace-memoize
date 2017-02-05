@@ -128,6 +128,7 @@ def store_in_cache(execve_call, fnames_all):
     # store
     first_execve_chash = hashlib.new(HASH_NAME)
 
+    # hash execve call
     chash_update_tree(first_execve_chash, execve_call)
     first_execve_hexdigest = first_execve_chash.hexdigest()
 
