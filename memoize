@@ -173,7 +173,8 @@ def store_in_cache(execve_call, fnames_all):
 
     # pp(sorted(wr_list))
 
-    for rw_file, rw_status in rw_list.items():
+    rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
+    for rw_file, rw_status in rw_list_sorted_by_fname:
         if rw_file in wr_list:
             continue            # exclude written files, because they are saved
         chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
@@ -188,7 +189,7 @@ def store_in_cache(execve_call, fnames_all):
     inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
 
     with open(inputs_mtime_chash_path, 'wb') as out_file:
-        for input_file, input_status in rw_list.items():
+        for input_file, input_status in rw_list_sorted_by_fname:
 
             if input_file in wr_list:
                 continue        # skip output files
