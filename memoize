@@ -144,7 +144,7 @@ def store_in_cache(execve_call, fnames_all):
         for fname in fnames:
             if not re.match(pattern=SYSTEM_FILE_RE,
                             string=bytes.decode(fname)):
-                if os.path.isdir(fname):
+                if os.path.isdir(fname): # TODO and not directory under current working tree
                     continue
                 if syscall in ['stat', 'statfs', 'access']:
                     if fname not in inputs_list:
