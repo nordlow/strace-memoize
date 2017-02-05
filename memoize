@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
-# TODO ask on StackExchange if there's a flag to strace to not show failing system calls
+# TODO ask on StackExchange if there's a flag to strace to not show failing
+# system calls
+
 # TODO use gcc -pipe
+
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
 import sys
