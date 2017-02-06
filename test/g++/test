@@ -1,0 +1,3 @@
+#!/bin/bash
+
+../../memoize gcc main.c
