@@ -47,7 +47,7 @@ SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 CACHE_DIR = '~/.cache'          # cache directory
 
-ENCODING = 'utf-8'              # default text encodign
+ENCODING = 'utf-8'              # default text encoding
 
 
 def dir_is_modified_since(dname, mtime):
