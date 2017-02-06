@@ -150,9 +150,9 @@ described by parameter `execve_call`."""
 
 def cache_makedirs(hexdigest):
     path = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize',
-                                  hexdigest[0:2],
-                                  hexdigest[2:4],
-                                  hexdigest[4:])
+                        hexdigest[0:2],
+                        hexdigest[2:4],
+                        hexdigest[4:])
     os.makedirs(name=path, exist_ok=True)
     print("cache path:", path)
     return path
