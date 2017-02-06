@@ -45,6 +45,8 @@ include_system_deps = True
 
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
+CACHE_DIR = '~/.cache'          # cache directory
+
 
 def dir_is_modified_since(dname, mtime):
     return os.path.getmtime(dname) != mtime # robust to NFS time skews
@@ -146,7 +148,7 @@ described by `execve_call`.
 def store_in_cache(execve_call, fnames_all):
     # create cache directory path
     execve_hexdigest = execve_chash(execve_call).hexdigest()
-    cache_dir_path = os.path.join(os.path.expanduser('~/.cache'), 'memoize',
+    cache_dir_path = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize',
                                   execve_hexdigest[0:2],
                                   execve_hexdigest[2:4],
                                   execve_hexdigest[4:])
