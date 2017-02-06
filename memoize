@@ -9,7 +9,7 @@
 
 # TODO Replace encode('utf-8') => encode('ascii')
 
-# TODO Should we include result of `os.getcwd()`?
+# TODO Should we include result of `os.getcwd()` in execve_chash?
 
 import sys
 import os
