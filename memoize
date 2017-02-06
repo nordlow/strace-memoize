@@ -11,6 +11,8 @@
 
 # TODO Should we include result of `os.getcwd()` in execve_chash?
 
+# Directory chash is chash of list of file names in directory
+
 import sys
 import os
 import subprocess
