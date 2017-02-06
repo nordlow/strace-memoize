@@ -131,8 +131,10 @@ def chash_update_tree(chash, curr):
 
 
 def execve_call_chash(execve_call):
-    """Create fingerprint (content hash) of call to system function execve()
-described by `execve_call`."""
+    """Create fingerprint (content hash) of call to system function `execve()`
+described by `execve_call`.
+
+    """
     chash = hashlib.new(HASH_NAME)
     execve_fname = execve_call[1]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
