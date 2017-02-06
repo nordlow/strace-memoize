@@ -47,6 +47,8 @@ SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 CACHE_DIR = '~/.cache'          # cache directory
 
+ENCODING = 'utf-8'              # default text encodign
+
 
 def dir_is_modified_since(dname, mtime):
     return os.path.getmtime(dname) != mtime # robust to NFS time skews
@@ -112,19 +114,19 @@ def chash_update_tree(chash, curr):
     if (isinstance(curr, bytes)):
         chash.update(curr)
     elif (isinstance(curr, str)):
-        chash.update(curr.encode('utf-8'))
+        chash.update(curr.encode(ENCODING))
     elif (isinstance(curr, list) or
           isinstance(curr, tuple)):
-        chash.update(repr(len(curr)).encode('utf-8'))
+        chash.update(repr(len(curr)).encode(ENCODING))
         for sub in curr:
             chash_update_tree(chash, sub)
     elif (isinstance(curr, dict)):
-        chash.update(repr(len(curr)).encode('utf-8'))
+        chash.update(repr(len(curr)).encode(ENCODING))
         for sub_key, sub_value in curr.items():
             chash_update_tree(chash, sub_key)
             chash_update_tree(chash, sub_value)
     elif (isinstance(curr, float)):
-        chash.update(str(curr).encode('utf-8'))
+        chash.update(str(curr).encode(ENCODING))
     elif (isinstance(curr, filter)):
         for sub in curr:
             chash_update_tree(chash, sub)
@@ -140,7 +142,7 @@ described by `execve_call`.
     chash = hashlib.new(HASH_NAME)
     execve_fname = execve_call[1]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
-    chash.update(os.getcwd().encode('utf-8'))     # current working directory. TODO needed?
+    chash.update(os.getcwd().encode(ENCODING))     # current working directory. TODO needed?
     chash_update_tree(chash, execve_call)         # the rest
     return chash
 
@@ -208,14 +210,14 @@ def store_in_cache(execve_call, fnames_all):
             if isinstance(input_status, tuple):
                 out_file.write(input_file +
                                separator +
-                               str(input_status[0]).encode('utf-8') +
+                               str(input_status[0]).encode(ENCODING) +
                                separator +
-                               input_status[1].encode('utf-8') +
+                               input_status[1].encode(ENCODING) +
                                b'\n')
             else:
                 out_file.write(input_file +
                                separator +
-                               str(input_status[0]).encode('utf-8') +
+                               str(input_status[0]).encode(ENCODING) +
                                b'\n')
 
 
