@@ -145,12 +145,12 @@ described by `execve_call`.
 
 def store_in_cache(execve_call, fnames_all):
     # create cache directory path
-    first_execve_hexdigest = execve_chash(execve_call).hexdigest()
+    execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
-                                  first_execve_hexdigest[0:2],
-                                  first_execve_hexdigest[2:4],
-                                  first_execve_hexdigest[4:])
+                                  execve_hexdigest[0:2],
+                                  execve_hexdigest[2:4],
+                                  execve_hexdigest[4:])
     os.makedirs(name=cache_dir_path, exist_ok=True)
     # print("cache_dir_path:", cache_dir_path)
 
