@@ -138,7 +138,7 @@ def chash_update_tree(chash, curr):
 
 def execve_chash(execve_call):
     """Create fingerprint (content hash) of call to system function `execve()`
-described by `execve_call`.
+described by parameter `execve_call`.
 
     """
     chash = hashlib.new(HASH_NAME)
