@@ -130,18 +130,18 @@ def chash_update_tree(chash, curr):
         raise Exception("Handle curr type")
 
 
-def store_in_cache(execve_call, fnames_all):
-    # store
-    execve_chash = hashlib.new(HASH_NAME)
-
-    # hash execve call
+def execve_call_chash(execve_call):
+    chash = hashlib.new(HASH_NAME)
     execve_fname = execve_call[1]
-    execve_chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
-    execve_chash.update(os.getcwd().encode('utf-8'))     # current working directory. TODO needed?
-    chash_update_tree(execve_chash, execve_call)         # the rest
-    first_execve_hexdigest = execve_chash.hexdigest()
+    chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
+    chash.update(os.getcwd().encode('utf-8'))     # current working directory. TODO needed?
+    chash_update_tree(chash, execve_call)         # the rest
+    return chash
 
+
+def store_in_cache(execve_call, fnames_all):
     # create cache directory path
+    first_execve_hexdigest = execve_call_chash(execve_call).hexdigest()
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
                                   first_execve_hexdigest[0:2],
