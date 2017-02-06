@@ -143,6 +143,7 @@ described by parameter `execve_call`."""
     chash = hashlib.new(HASH_NAME)
     execve_fname = execve_call[1]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
+    print('cwd:', os.getcwd())
     chash.update(os.getcwd().encode(ENCODING))     # current working directory. TODO needed?
     chash_update_tree(chash, execve_call)         # the rest
     return chash
@@ -154,7 +155,7 @@ def cache_makedirs(hexdigest):
                         hexdigest[2:4],
                         hexdigest[4:])
     os.makedirs(name=path, exist_ok=True)
-    print("cache path:", path)
+    print("cache:", path)
     return path
 
 
