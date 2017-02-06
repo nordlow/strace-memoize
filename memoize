@@ -135,6 +135,8 @@ def store_in_cache(execve_call, fnames_all):
     # TODO need to process contents of binary and include os.getcwd()
 
     # hash execve call
+    execve_fname = execve_call[1]
+    execve_chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
     chash_update_tree(execve_chash, execve_call)
     first_execve_hexdigest = execve_chash.hexdigest()
 
