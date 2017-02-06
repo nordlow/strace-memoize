@@ -9,6 +9,8 @@
 
 # TODO Replace encode('utf-8') => encode('ascii')
 
+# TODO Should we include result of `os.getcwd()`?
+
 import sys
 import os
 import subprocess
