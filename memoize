@@ -159,9 +159,7 @@ def cache_makedirs(hexdigest):
 
 
 def store_in_cache(execve_call, fnames_all):
-    # create cache directory path
     execve_hexdigest = execve_chash(execve_call).hexdigest()
-
     cache_dir_path = cache_makedirs(execve_hexdigest)
 
     # fingerprint inputs
