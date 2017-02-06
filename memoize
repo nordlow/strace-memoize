@@ -132,12 +132,11 @@ def store_in_cache(execve_call, fnames_all):
     # store
     execve_chash = hashlib.new(HASH_NAME)
 
-    # TODO need to process contents of binary and include os.getcwd()
-
     # hash execve call
     execve_fname = execve_call[1]
     execve_chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
-    chash_update_tree(execve_chash, execve_call)
+    execve_chash.update(os.getcwd().encode('utf-8'))     # current working directory
+    chash_update_tree(execve_chash, execve_call)         # the rest
     first_execve_hexdigest = execve_chash.hexdigest()
 
     # create cache directory path
