@@ -28,9 +28,6 @@ from getopt import getopt
 
 # from dbgio import dln
 
-# if set use modification time instead of content-hash as indentity
-OPT_USE_MODTIME = False
-
 # show results
 OPT_VERBOSE = False # False, True, 'raw'
 
@@ -341,11 +338,9 @@ def memoized_run(args, trace_childs=True):
 
 if __name__ == '__main__':
 
-    opts, args = getopt(sys.argv[1:], 'tdv:')
+    opts, args = getopt(sys.argv[1:], 'dv:')
 
     for opt, value in opts:
-        if opt == '-t':
-            OPT_USE_MODTIME = True
         if opt == '-v':
             OPT_VERBOSE = True
 
