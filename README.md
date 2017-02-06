@@ -2,7 +2,7 @@
 
 ## Improvememnts
 - Python 3
-- Process tree and io visualization (currently in YAML)
+- Process tree and IO visualization (currently in YAML)
 
 ## TODO
 - [ ] Test on Linux for Windows 10 (does it support strace and inotify?)
