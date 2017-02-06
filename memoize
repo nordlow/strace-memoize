@@ -139,6 +139,7 @@ def chash_update_tree(chash, curr):
 def execve_chash(execve_call):
     """Create fingerprint (content hash) of call to system function `execve()`
 described by parameter `execve_call`."""
+
     chash = hashlib.new(HASH_NAME)
     execve_fname = execve_call[1]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
@@ -147,15 +148,21 @@ described by parameter `execve_call`."""
     return chash
 
 
-def store_in_cache(execve_call, fnames_all):
-    # create cache directory path
-    execve_hexdigest = execve_chash(execve_call).hexdigest()
-    cache_dir_path = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize',
+def cache_makedirs(execve_hexdigest):
+    path = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize',
                                   execve_hexdigest[0:2],
                                   execve_hexdigest[2:4],
                                   execve_hexdigest[4:])
-    os.makedirs(name=cache_dir_path, exist_ok=True)
-    # print("cache_dir_path:", cache_dir_path)
+    os.makedirs(name=path, exist_ok=True)
+    print("cache path:", path)
+    return path
+
+
+def store_in_cache(execve_call, fnames_all):
+    # create cache directory path
+    execve_hexdigest = execve_chash(execve_call).hexdigest()
+
+    cache_dir_path = cache_makedirs(execve_hexdigest)
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
