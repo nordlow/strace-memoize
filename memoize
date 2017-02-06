@@ -130,7 +130,7 @@ def chash_update_tree(chash, curr):
         raise Exception("Handle curr type")
 
 
-def execve_call_chash(execve_call):
+def execve_chash(execve_call):
     """Create fingerprint (content hash) of call to system function `execve()`
 described by `execve_call`.
 
@@ -145,7 +145,7 @@ described by `execve_call`.
 
 def store_in_cache(execve_call, fnames_all):
     # create cache directory path
-    first_execve_hexdigest = execve_call_chash(execve_call).hexdigest()
+    first_execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = os.path.join(os.path.expanduser('~/.cache'),
                                   'memoize',
                                   first_execve_hexdigest[0:2],
