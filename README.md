@@ -8,3 +8,5 @@
 - [ ] Include environment (`os.environ.__dict__`) in process call input hash
 - [ ] Use [inotify](https://en.wikipedia.org/wiki/Inotify)
 - [ ] Test on Linux for Windows 10 (does it support strace and inotify?)
+- [ ] Add optional support for more robust tracing
+  with [ltrace](https://en.wikipedia.org/wiki/Ltrace)
