@@ -48,6 +48,8 @@ CACHE_DIR = '~/.cache'          # cache directory
 
 ENCODING = 'utf-8'              # default text encoding
 
+SEPARATOR = b'      '       # tab
+
 
 def dir_is_modified_since(dname, mtime):
     return os.path.getmtime(dname) != mtime # robust to NFS time skews
@@ -155,6 +157,32 @@ def cache_makedirs(hexdigest):
     return path
 
 
+def write_input_file_list(rw_list_sorted_by_fname,
+                          wr_list,
+                          inputs_dir_path):
+
+    inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
+    with open(inputs_mtime_chash_path, 'wb') as out_file:
+        for input_file, input_status in rw_list_sorted_by_fname:
+            pp((input_file, input_status))
+
+            if input_file in wr_list:
+                continue        # skip output files
+
+            if isinstance(input_status, tuple):
+                out_file.write(input_file +
+                               SEPARATOR +
+                               str(input_status[0]).encode(ENCODING) +
+                               SEPARATOR +
+                               input_status[1].encode(ENCODING) +
+                               b'\n')
+            else:
+                out_file.write(input_file +
+                               SEPARATOR +
+                               str(input_status).encode(ENCODING) +
+                               b'\n')
+
+
 def store_in_cache(execve_call, fnames_all):
     execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = cache_makedirs(execve_hexdigest)
@@ -198,33 +226,16 @@ def store_in_cache(execve_call, fnames_all):
         else:
             chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
 
-    separator = b'	'       # tab
-
     inputs_dir_path = os.path.join(cache_dir_path,
                                    "rw_files_content_hash:" +
                                    inputs_chash.hexdigest())
     os.makedirs(name=inputs_dir_path,
                 exist_ok=True)
-    inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
 
-    with open(inputs_mtime_chash_path, 'wb') as out_file:
-        for input_file, input_status in rw_list_sorted_by_fname:
-
-            if input_file in wr_list:
-                continue        # skip output files
-
-            if isinstance(input_status, tuple):
-                out_file.write(input_file +
-                               separator +
-                               str(input_status[0]).encode(ENCODING) +
-                               separator +
-                               input_status[1].encode(ENCODING) +
-                               b'\n')
-            else:
-                out_file.write(input_file +
-                               separator +
-                               str(input_status[0]).encode(ENCODING) +
-                               b'\n')
+    # write input files lists
+    write_input_file_list(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
+                          wr_list=wr_list,
+                          inputs_dir_path=inputs_dir_path)
 
 
 def memoized_run(args, trace_childs=True):
