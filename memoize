@@ -223,10 +223,6 @@ def store_output(wr_list, inputs_dir_path):
         wr_list_file.write(hexdigest.encode('ascii') + SEPARATOR + wr_file + b'\n')
 
 
-def store_output_states(wr_list):
-    pass
-
-
 def dir_filenames_chash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = os.listdir(dname)
