@@ -33,6 +33,7 @@ import os.path
 import re
 import hashlib
 import tempfile
+import shutil
 import pickle                   # cPickle not available in Python3
 import json
 
@@ -175,9 +176,10 @@ def cache_makedirs(hexdigest):
     return path
 
 
-def write_input_file_list(rw_list_sorted_by_fname,
-                          wr_list,
-                          inputs_dir_path):
+def store_input_states(rw_list_sorted_by_fname,
+                       wr_list,
+                       inputs_dir_path):
+
     inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
     with open(inputs_mtime_chash_path, 'wb') as out_file:
         for input_file, input_status in rw_list_sorted_by_fname:
@@ -199,6 +201,23 @@ def write_input_file_list(rw_list_sorted_by_fname,
                                SEPARATOR +
                                str(input_status).encode(ENCODING) +
                                b'\n')
+
+def store_output_artifacts(wr_list):
+    for wr_file in wr_list:
+        hexdigest = hashlib.new(HASH_NAME, open(wr_file, 'rb').read()).hexdigest()
+
+        cache_dir = os.path.join(os.path.expanduser(CACHE_DIR),
+                                 'memoize',
+                                 'artifacts')
+        os.makedirs(name=cache_dir, exist_ok=True)
+
+        artifact_path = os.path.join(cache_dir,  hexdigest)
+
+        shutil.copyfile(wr_file, artifact_path)
+
+
+def store_output_states(wr_list):
+    pass
 
 
 def dir_filenames_chash(dname, chash):
@@ -241,8 +260,7 @@ def store_in_cache(execve_call, fnames_all):
                                  'open_wronly',
                                  'open_rdwr']:
                     rw_list[fname] = (os.path.getmtime(fname),
-                                      hashlib.new(HASH_NAME,
-                                                  open(fname, 'rb').read()).hexdigest())
+                                      hashlib.new(HASH_NAME, open(fname, 'rb').read()).hexdigest())
                     if syscall in ['open_wronly',
                                    'open_rdwr']:
                         wr_list.add(fname)
@@ -269,10 +287,12 @@ def store_in_cache(execve_call, fnames_all):
     # write execve call
     open(os.path.join(cache_dir_path, 'execve_call'), 'w').write(repr(execve_call))
 
-    # write input files lists
-    write_input_file_list(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
-                          wr_list=wr_list,
-                          inputs_dir_path=inputs_dir_path)
+    store_input_states(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
+                       wr_list=wr_list,
+                       inputs_dir_path=inputs_dir_path)
+
+    store_output_artifacts(wr_list=wr_list)
+    store_output_states(wr_list=wr_list)
 
 
 def memoized_run(args, trace_childs=True):
