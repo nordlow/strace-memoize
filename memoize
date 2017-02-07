@@ -186,10 +186,10 @@ def write_input_file_list(rw_list_sorted_by_fname,
 
 def chash_dir_filenames(dname, chash):
     """Hash dir contents as list of filenames into chash."""
-    fns = os.listdir(dname)
-    chash.update(str(len(fns)).encode(ENCODING))
-    for fn in fns:
-        chash_update_tree(chash, fn)
+    sub_fnames = os.listdir(dname)
+    chash.update(str(len(sub_fnames)).encode(ENCODING))
+    for sub_fname in sub_fnames:
+        chash_update_tree(chash, sub_fname)
 
 
 def store_in_cache(execve_call, fnames_all):
