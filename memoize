@@ -160,6 +160,7 @@ def cache_makedirs(hexdigest):
 def write_input_file_list(rw_list_sorted_by_fname,
                           wr_list,
                           inputs_dir_path):
+    print('write_input_file_list:')
 
     inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
     with open(inputs_mtime_chash_path, 'wb') as out_file:
