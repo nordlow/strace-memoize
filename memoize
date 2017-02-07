@@ -5,7 +5,7 @@
 
 # TODO use gcc -pipe
 
-# TODO call git status on input files
+# TODO add git origin (repo/branch)
 
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
