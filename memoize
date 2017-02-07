@@ -21,6 +21,9 @@
 
 # TODO use ltrace and filter env by catching getenv
 
+# TODO add server that does inotify watches for all dirs containing input and
+# output files
+
 # TODO compress output files
 
 import sys
