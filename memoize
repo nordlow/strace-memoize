@@ -64,7 +64,7 @@ MEMOIZE_DIR = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize')
 
 ENCODING = 'utf-8'              # default text encoding
 
-SEPARATOR = b'      '           # tab
+SEPARATOR = b'	'           # tab
 
 
 def dir_is_modified_since(dname, mtime):
@@ -207,9 +207,10 @@ def store_input_states(rw_list_sorted_by_fname,
 def store_output(wr_list, inputs_dir_path):
 
     wr_list_path = os.path.join(inputs_dir_path, 'wr_files')
+    pp(wr_list_path)
+    wr_list_file = open(wr_list_path, 'wb')
 
     for wr_file in wr_list:
-        pp((inputs_dir_path, wr_file))
 
         hexdigest = hashlib.new(HASH_NAME,
                                 open(wr_file, 'rb').read()).hexdigest()
