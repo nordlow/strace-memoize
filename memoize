@@ -5,6 +5,8 @@
 
 # TODO use gcc -pipe
 
+# TODO call git status on input files
+
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
 # TODO replace encode('utf-8') => encode('ascii')
@@ -52,7 +54,7 @@ CACHE_DIR = '~/.cache'          # cache directory
 
 ENCODING = 'utf-8'              # default text encoding
 
-SEPARATOR = b'      '       # tab
+SEPARATOR = b'      '           # tab
 
 
 def dir_is_modified_since(dname, mtime):
