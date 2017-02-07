@@ -188,8 +188,12 @@ def write_input_file_list(rw_list_sorted_by_fname,
 def dir_filenames_chash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = os.listdir(dname)
+
+    # hash number of files in dir named dname
     chash.update(str(len(sub_fnames)).encode(ENCODING))
+
     for sub_fname in sub_fnames:
+        # hash dir sub file name
         chash_update_tree(chash, sub_fname)
 
 
