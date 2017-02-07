@@ -189,19 +189,17 @@ def store_input_states(rw_list_sorted_by_fname,
             if input_file in wr_list:
                 continue        # skip output files
 
-            # pp((input_file, input_status))
-
             if isinstance(input_status, tuple):
-                out_file.write(input_file +
+                out_file.write(input_status[1].encode(ENCODING) +
                                SEPARATOR +
                                str(input_status[0]).encode(ENCODING) +
                                SEPARATOR +
-                               input_status[1].encode(ENCODING) +
+                               input_file +
                                b'\n')
             else:
-                out_file.write(input_file +
+                out_file.write(str(input_status).encode(ENCODING) +
                                SEPARATOR +
-                               str(input_status).encode(ENCODING) +
+                               input_file +
                                b'\n')
 
 def store_output(wr_list, inputs_dir_path):
