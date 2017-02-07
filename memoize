@@ -189,14 +189,14 @@ def store_input_states(rw_list_sorted_by_fname,
                 continue        # skip output files
 
             if isinstance(input_status, tuple):
-                out_file.write(input_status[1].encode(ENCODING) +
+                out_file.write(input_status[1].encode('ascii') +
                                SEPARATOR +
-                               str(input_status[0]).encode(ENCODING) +
+                               str(input_status[0]).encode('ascii') +
                                SEPARATOR +
                                input_file +
                                b'\n')
             else:
-                out_file.write(str(input_status).encode(ENCODING) +
+                out_file.write(str(input_status).encode('ascii') +
                                SEPARATOR +
                                input_file +
                                b'\n')
@@ -204,7 +204,6 @@ def store_input_states(rw_list_sorted_by_fname,
 def store_output(wr_list, inputs_dir_path):
 
     wr_list_path = os.path.join(inputs_dir_path, 'wr_files')
-    pp(wr_list_path)
     wr_list_file = open(wr_list_path, 'wb')
 
     for wr_file in wr_list:
@@ -220,6 +219,8 @@ def store_output(wr_list, inputs_dir_path):
         with open(wr_file, 'rb') as src_file:
             with gzip.open(artifact_path, 'wb') as dst_file:
                 shutil.copyfileobj(src_file, dst_file)
+
+        wr_list_file.write(hexdigest.encode('ascii') + SEPARATOR + wr_file + b'\n')
 
 
 def store_output_states(wr_list):
