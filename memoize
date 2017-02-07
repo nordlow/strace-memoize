@@ -59,6 +59,7 @@ include_system_deps = True
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 CACHE_DIR = '~/.cache'          # cache directory
+MEMOIZE_DIR = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize')
 
 ENCODING = 'utf-8'              # default text encoding
 
@@ -167,7 +168,7 @@ described by parameter `execve_call`."""
 
 
 def cache_makedirs(hexdigest):
-    path = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize',
+    path = os.path.join(MEMOIZE_DIR,
                         hexdigest[0:2],
                         hexdigest[2:4],
                         hexdigest[4:])
@@ -208,8 +209,7 @@ def store_output_artifacts(wr_list):
         hexdigest = hashlib.new(HASH_NAME,
                                 open(wr_file, 'rb').read()).hexdigest()
 
-        artifact_dir = os.path.join(os.path.expanduser(CACHE_DIR),
-                                    'memoize', 'artifacts')
+        artifact_dir = os.path.join(MEMOIZE_DIR, 'artifacts')
         os.makedirs(name=artifact_dir, exist_ok=True)
 
         artifact_path = os.path.join(artifact_dir,  hexdigest)
