@@ -174,7 +174,6 @@ def cache_makedirs(hexdigest):
                         hexdigest[2:4],
                         hexdigest[4:])
     os.makedirs(name=path, exist_ok=True)
-    # print("cache:", path)
     return path
 
 
