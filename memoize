@@ -185,7 +185,7 @@ def write_input_file_list(rw_list_sorted_by_fname,
                                b'\n')
 
 
-def chash_dir_filenames(dname, chash):
+def dir_filenames_chash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = os.listdir(dname)
     chash.update(str(len(sub_fnames)).encode(ENCODING))
@@ -228,7 +228,7 @@ def store_in_cache(execve_call, fnames_all):
             continue            # exclude written files, because they are saved
 
         if os.path.isdir(rw_file):
-            chash_dir_filenames(dname=rw_file,
+            dir_filenames_chash(dname=rw_file,
                                 chash=inputs_chash)
         else:
             chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
