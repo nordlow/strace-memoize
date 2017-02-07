@@ -221,8 +221,6 @@ def store_in_cache(execve_call, fnames_all):
                                    'open_rdwr']:
                         wr_list.add(fname)
 
-    # pp(sorted(wr_list))
-
     rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
     for rw_file, rw_status in rw_list_sorted_by_fname:
 
