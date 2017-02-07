@@ -141,7 +141,7 @@ described by parameter `execve_call`."""
     chash = hashlib.new(HASH_NAME)
     execve_fname = execve_call[1]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
-    print('cwd:', os.getcwd())
+    # print('cwd:', os.getcwd())
     chash.update(os.getcwd().encode(ENCODING))     # current working directory. TODO needed?
     chash_update_tree(chash, execve_call)         # the rest
     return chash
@@ -153,15 +153,13 @@ def cache_makedirs(hexdigest):
                         hexdigest[2:4],
                         hexdigest[4:])
     os.makedirs(name=path, exist_ok=True)
-    print("cache:", path)
+    # print("cache:", path)
     return path
 
 
 def write_input_file_list(rw_list_sorted_by_fname,
                           wr_list,
                           inputs_dir_path):
-    print('write_input_file_list:')
-
     inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
     with open(inputs_mtime_chash_path, 'wb') as out_file:
         for input_file, input_status in rw_list_sorted_by_fname:
@@ -169,7 +167,7 @@ def write_input_file_list(rw_list_sorted_by_fname,
             if input_file in wr_list:
                 continue        # skip output files
 
-            pp((input_file, input_status))
+            # pp((input_file, input_status))
 
             if isinstance(input_status, tuple):
                 out_file.write(input_file +
@@ -214,7 +212,12 @@ def store_in_cache(execve_call, fnames_all):
 
                 if syscall in ['stat', 'statfs', 'access']:
                     if fname not in rw_list:
-                        rw_list[fname] = os.path.getmtime(fname)
+                        if os.path.isdir(fname):
+                            dir_chash = hashlib.new(HASH_NAME)
+                            dir_filenames_chash(fname, dir_chash)
+                            rw_list[fname] = (os.path.getmtime(fname), dir_chash.hexdigest())
+                        else:
+                            rw_list[fname] = os.path.getmtime(fname)
                 elif syscall in ['open_rdonly',
                                  'open_wronly',
                                  'open_rdwr']:
