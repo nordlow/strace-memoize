@@ -204,8 +204,12 @@ def store_input_states(rw_list_sorted_by_fname,
                                str(input_status).encode(ENCODING) +
                                b'\n')
 
-def store_output_artifacts(wr_list):
+def store_output(wr_list, inputs_dir_path):
+
+    wr_list_path = os.path.join(inputs_dir_path, 'wr_files')
+
     for wr_file in wr_list:
+        pp((inputs_dir_path, wr_file))
 
         hexdigest = hashlib.new(HASH_NAME,
                                 open(wr_file, 'rb').read()).hexdigest()
@@ -295,8 +299,8 @@ def store_in_cache(execve_call, fnames_all):
                        wr_list=wr_list,
                        inputs_dir_path=inputs_dir_path)
 
-    store_output_artifacts(wr_list=wr_list)
-    store_output_states(wr_list=wr_list)
+    store_output(wr_list=wr_list,
+                 inputs_dir_path=inputs_dir_path)
 
 
 def memoized_run(args, trace_childs=True):
