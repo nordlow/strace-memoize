@@ -34,6 +34,7 @@ import re
 import hashlib
 import tempfile
 import shutil
+import gzip
 import pickle                   # cPickle not available in Python3
 import json
 
@@ -212,8 +213,11 @@ def store_output_artifacts(wr_list):
         artifact_dir = os.path.join(MEMOIZE_DIR, 'artifacts')
         os.makedirs(name=artifact_dir, exist_ok=True)
 
-        artifact_path = os.path.join(artifact_dir,  hexdigest)
-        shutil.copyfile(wr_file, artifact_path)
+        artifact_path = os.path.join(artifact_dir, hexdigest + '.gz')
+
+        with open(wr_file, 'rb') as f_in:
+            with gzip.open(artifact_path, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
 
 
 def store_output_states(wr_list):
