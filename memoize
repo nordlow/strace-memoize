@@ -164,10 +164,11 @@ def write_input_file_list(rw_list_sorted_by_fname,
     inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
     with open(inputs_mtime_chash_path, 'wb') as out_file:
         for input_file, input_status in rw_list_sorted_by_fname:
-            pp((input_file, input_status))
 
             if input_file in wr_list:
                 continue        # skip output files
+
+            pp((input_file, input_status))
 
             if isinstance(input_status, tuple):
                 out_file.write(input_file +
@@ -181,6 +182,15 @@ def write_input_file_list(rw_list_sorted_by_fname,
                                SEPARATOR +
                                str(input_status).encode(ENCODING) +
                                b'\n')
+
+
+def chash_dir_filenames(dname, chash):
+    """Hash dir contents as list of filenames into chash."""
+
+    sub_fns = os.listdir(dname)
+    chash.update(str(len(sub_fns)).encode(ENCODING))
+    for sub_fn in sub_fns:
+        chash_update_tree(chash, sub_fn)
 
 
 def store_in_cache(execve_call, fnames_all):
@@ -220,9 +230,8 @@ def store_in_cache(execve_call, fnames_all):
             continue            # exclude written files, because they are saved
 
         if os.path.isdir(rw_file):
-            # hash dir contents as list of filenames
-            for sub_fn in os.listdir(rw_file):
-                chash_update_tree(inputs_chash, sub_fn)
+            chash_dir_filenames(dname=rw_file,
+                                chash=inputs_chash)
         else:
             chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
 
