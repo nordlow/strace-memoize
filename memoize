@@ -171,9 +171,6 @@ def store_in_cache(execve_call, fnames_all):
             if not re.match(pattern=SYSTEM_FILE_RE,
                             string=bytes.decode(fname)):
 
-                if os.path.isdir(fname): # TODO and not directory under current working treen
-                    continue
-
                 if syscall in ['stat', 'statfs', 'access']:
                     if fname not in rw_list:
                         rw_list[fname] = os.path.getmtime(fname)
@@ -191,9 +188,16 @@ def store_in_cache(execve_call, fnames_all):
 
     rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
     for rw_file, rw_status in rw_list_sorted_by_fname:
+
         if rw_file in wr_list:
             continue            # exclude written files, because they are saved
-        chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
+
+        if os.path.isdir(rw_file):
+            # hash dir contents as list of filenames
+            for sub_fn in os.listdir(rw_file):
+                chash_update_tree(inputs_chash, sub_fn)
+        else:
+            chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
 
     separator = b'	'       # tab
 
