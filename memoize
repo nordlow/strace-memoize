@@ -204,15 +204,15 @@ def store_input_states(rw_list_sorted_by_fname,
 
 def store_output_artifacts(wr_list):
     for wr_file in wr_list:
-        hexdigest = hashlib.new(HASH_NAME, open(wr_file, 'rb').read()).hexdigest()
 
-        cache_dir = os.path.join(os.path.expanduser(CACHE_DIR),
-                                 'memoize',
-                                 'artifacts')
-        os.makedirs(name=cache_dir, exist_ok=True)
+        hexdigest = hashlib.new(HASH_NAME,
+                                open(wr_file, 'rb').read()).hexdigest()
 
-        artifact_path = os.path.join(cache_dir,  hexdigest)
+        artifact_dir = os.path.join(os.path.expanduser(CACHE_DIR),
+                                    'memoize', 'artifacts')
+        os.makedirs(name=artifact_dir, exist_ok=True)
 
+        artifact_path = os.path.join(artifact_dir,  hexdigest)
         shutil.copyfile(wr_file, artifact_path)
 
 
