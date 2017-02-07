@@ -5,7 +5,11 @@
 
 # TODO use gcc -pipe
 
-# TODO add git origin (repo/branch/commit) to inpput files and sort them on git repo origin
+# TODO add git origin (repo:commit) to input files and sort them on git repo origin
+# GIT_REPO:GIT_COMMIT
+# TAB rel_path_file_a
+# TAB rel_path_file_b
+# TAB ...
 
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
