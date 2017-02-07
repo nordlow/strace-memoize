@@ -5,7 +5,7 @@
 
 # TODO use gcc -pipe
 
-# TODO add git origin (repo/branch) to inpput files and sort them on git repo origin
+# TODO add git origin (repo/branch/commit) to inpput files and sort them on git repo origin
 
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
