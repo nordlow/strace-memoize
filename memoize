@@ -147,7 +147,6 @@ described by parameter `execve_call`."""
 
     chash.update(os.getcwd().encode(ENCODING))     # current working directory. TODO needed?
 
-    pp(execve_call)
     chash_update_tree(chash, execve_call)         # the rest
 
     return chash
@@ -251,6 +250,11 @@ def store_in_cache(execve_call, fnames_all):
                                    inputs_chash.hexdigest())
     os.makedirs(name=inputs_dir_path,
                 exist_ok=True)
+
+
+    # write execve call
+    open(os.path.join(cache_dir_path, 'execve_call'),
+         'w').write(repr(execve_call))
 
     # write input files lists
     write_input_file_list(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
