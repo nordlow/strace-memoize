@@ -215,9 +215,9 @@ def store_output_artifacts(wr_list):
 
         artifact_path = os.path.join(artifact_dir, hexdigest + '.gz')
 
-        with open(wr_file, 'rb') as f_in:
-            with gzip.open(artifact_path, 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
+        with open(wr_file, 'rb') as in_file:
+            with gzip.open(artifact_path, 'wb') as out_file:
+                shutil.copyfileobj(in_file, out_file)
 
 
 def store_output_states(wr_list):
