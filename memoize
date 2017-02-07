@@ -109,7 +109,6 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
 
 
 def chash_update_tree(chash, curr):
-    # pp(chash.hexdigest())
     if (isinstance(curr, bytes)):
         chash.update(curr)
     elif (isinstance(curr, str)):
