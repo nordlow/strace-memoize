@@ -272,33 +272,35 @@ def do_it(execve_call, fnames_all):
     for (syscall, fnames) in fnames_all.items():
         # pp((syscall, fnames))
         for fname in fnames:
-            if not re.match(pattern=SYSTEM_FILE_RE,
-                            string=bytes.decode(fname)):
 
-                if syscall in ['stat', 'statfs', 'access']:
-                    if fname not in rw_list:
-                        if os.path.isdir(fname):
-                            dir_chash = hashlib.new(HASH_NAME)
-                            dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
-                            rw_list[fname] = (os.path.getmtime(fname),
-                                              dir_chash.hexdigest())
-                        else:
-                            rw_list[fname] = os.path.getmtime(fname)
-                elif syscall in ['open_rdonly',
-                                 'open_wronly',
-                                 'open_rdwr']:
+            if re.match(pattern=SYSTEM_FILE_RE,
+                        string=bytes.decode(fname)):
+                continue        # skip system files for now
 
+            if syscall in ['stat', 'statfs', 'access']:
+                if fname not in rw_list:
                     if os.path.isdir(fname):
                         dir_chash = hashlib.new(HASH_NAME)
-                        dir_filenames_chash(fname, dir_chash)
+                        dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
                         rw_list[fname] = (os.path.getmtime(fname),
                                           dir_chash.hexdigest())
                     else:
-                        rw_list[fname] = (os.path.getmtime(fname),
-                                          hashlib.new(HASH_NAME, open(fname, 'rb').read()).hexdigest())
-                        if syscall in ['open_wronly',
-                                       'open_rdwr']:
-                            wr_list.add(fname)
+                        rw_list[fname] = os.path.getmtime(fname)
+            elif syscall in ['open_rdonly',
+                             'open_wronly',
+                             'open_rdwr']:
+
+                if os.path.isdir(fname):
+                    dir_chash = hashlib.new(HASH_NAME)
+                    dir_filenames_chash(fname, dir_chash)
+                    rw_list[fname] = (os.path.getmtime(fname),
+                                      dir_chash.hexdigest())
+                else:
+                    rw_list[fname] = (os.path.getmtime(fname),
+                                      hashlib.new(HASH_NAME, open(fname, 'rb').read()).hexdigest())
+                    if syscall in ['open_wronly',
+                                   'open_rdwr']:
+                        wr_list.add(fname)
 
     rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
     for rw_file, rw_status in rw_list_sorted_by_fname:
