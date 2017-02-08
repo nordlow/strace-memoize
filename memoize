@@ -270,6 +270,7 @@ def do_it(execve_call, fnames_all):
     rw_list = {}       # read or/and written file names => mtime and optional chash
     wr_list = set()    # written file names
     for (syscall, fnames) in fnames_all.items():
+        # pp((syscall, fnames))
         for fname in fnames:
             if not re.match(pattern=SYSTEM_FILE_RE,
                             string=bytes.decode(fname)):
@@ -286,6 +287,7 @@ def do_it(execve_call, fnames_all):
                 elif syscall in ['open_rdonly',
                                  'open_wronly',
                                  'open_rdwr']:
+
                     if os.path.isdir(fname):
                         dir_chash = hashlib.new(HASH_NAME)
                         dir_filenames_chash(fname, dir_chash)
