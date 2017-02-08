@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO Add `env` argument to `memoized_run` and use it instead of `os.environ._data`
+
 # TODO Detect file system race conditions in child processes
 
 # TODO ask on StackExchange if there's a flag to strace to not show failing
@@ -283,7 +285,7 @@ def dir_filenames_chash(dname, chash):
         chash_update_tree(chash, sub_fname)
 
 
-def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
+def try_load_from_cache(cache_dir_path):
     cache_dir_inputs = os.listdir(cache_dir_path)
 
     for rw_base_filename in filter(lambda fname: fname.startswith(INPUTS_FILE_CONTENT_HASH_PREFIX),
@@ -312,9 +314,7 @@ def do_it(execve_call, fnames_all):
     execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
 
-    cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path,
-                                              execve_call=execve_call,
-                                              fnames_all=fnames_all)
+    cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
 
     cache_fetch_failed = False
     if cached_outputs_path:
@@ -491,7 +491,32 @@ def process_strace_output_file(out_file):
     return (first_execve_call, trace, fnames_all)
 
 
-def memoized_run(args, trace_childs=True):
+def which(program):
+    """http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python#377028"""
+
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+
+def memoized_run(args,
+                 trace_childs=True):
+
+    # state describe progress called with arguments (args)
+    call_state = (which(args[0]), args, os.getcwd(), os.environ._data)
+    pp(call_state)
 
     indent = 0
 
