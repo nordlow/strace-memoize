@@ -6,7 +6,7 @@
 
 # TODO Update modification times in cache if they are same as written file
 
-# TODO Add `env` argument to `memoized_run` and use it instead of `os.environ._data`
+# TODO Add `env` argument to `memoized_run` and use it instead of `os.environ._data` if set
 
 # TODO Detect file system race conditions in child processes
 
