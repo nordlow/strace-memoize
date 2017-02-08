@@ -193,7 +193,7 @@ def store_inputs_pickle(inputs_path, inputs):
     with open(inputs_path + '.pickle', 'wb') as out_file:
         pickle.dump(inputs, out_file, pickle.DEFAULT_PROTOCOL)
 
-def store_input_states(rw_list_sorted_by_fname,
+def store_inputs(rw_list_sorted_by_fname,
                        wr_list,
                        inputs_dir_path):
     print("inputs_dir_path:", inputs_dir_path)
@@ -223,7 +223,7 @@ def store_input_states(rw_list_sorted_by_fname,
                                input_file +
                                b'\n')
 
-def store_output(wr_list, inputs_dir_path):
+def store_outputs(wr_list, inputs_dir_path):
     """Store output WR_LIST in directory INPUTS_DIR_PATH."""
 
     wr_list_path = os.path.join(inputs_dir_path, OUTPUTS_FILENAME)
@@ -344,12 +344,12 @@ def do_it(execve_call, fnames_all):
                       'execve_call.python-repr'),
          'w').write(repr(execve_call))
 
-    store_input_states(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
-                       wr_list=wr_list,
-                       inputs_dir_path=inputs_dir_path)
-
-    store_output(wr_list=wr_list,
+    store_inputs(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
+                 wr_list=wr_list,
                  inputs_dir_path=inputs_dir_path)
+
+    store_outputs(wr_list=wr_list,
+                  inputs_dir_path=inputs_dir_path)
 
     return 'uncached'
 
