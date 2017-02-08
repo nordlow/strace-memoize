@@ -61,6 +61,8 @@ ARTIFACT_DIR = os.path.join(MEMOIZE_DIR, 'artifacts', 'SHA-1')
 
 ENCODING = 'utf-8'              # default text encoding
 
+RW_FILES_CONTENT_HASH_PREFIX = 'rw_files_content_hash:'
+
 SEPARATOR = b'	'           # tab
 
 
@@ -282,7 +284,7 @@ def store_in_cache(execve_call, fnames_all):
             chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
 
     inputs_dir_path = os.path.join(cache_dir_path,
-                                   "rw_files_content_hash:" +
+                                   RW_FILES_CONTENT_HASH_PREFIX +
                                    inputs_chash.hexdigest())
 
     # create input root directory
