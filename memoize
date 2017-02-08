@@ -187,11 +187,12 @@ def cache_makedirs(execve_hexdigest):
     return path
 
 
-def store_inputs_pickle(inputs_path, inputs):
-    """Store input file list INPUTS in a file at INPUTS_PATH."""
+def store_file_list_pickle(base_path, file_list):
+    """Store input file list FILE_LIST in a file at BASE_PATH."""
 
-    with open(inputs_path + '.pickle', 'wb') as out_file:
-        pickle.dump(inputs, out_file, pickle.DEFAULT_PROTOCOL)
+    with open(base_path + '.pickle', 'wb') as out_file:
+        pickle.dump(file_list, out_file, pickle.DEFAULT_PROTOCOL)
+
 
 def store_inputs(rw_list_sorted_by_fname,
                        wr_list,
@@ -200,8 +201,8 @@ def store_inputs(rw_list_sorted_by_fname,
 
     inputs_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
 
-    store_inputs_pickle(inputs_path=inputs_path,
-                        inputs=rw_list_sorted_by_fname)
+    store_file_list_pickle(base_path=inputs_path,
+                           file_list=rw_list_sorted_by_fname)
 
     # human readable
     with open(inputs_path, 'wb') as out_file:
