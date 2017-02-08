@@ -63,6 +63,8 @@ ENCODING = 'utf-8'              # default text encoding
 
 RW_FILES_CONTENT_HASH_PREFIX = 'rw_files_content_hash:'
 
+MAX_STRACE_STRING_LENGTH = 4096
+
 SEPARATOR = b'	'           # tab
 
 
@@ -397,7 +399,6 @@ def process_strace_output_file(out_file):
     return (first_execve_call, trace, fnames_all)
 
 
-
 def memoized_run(args, trace_childs=True):
 
     indent = 0
@@ -405,7 +406,8 @@ def memoized_run(args, trace_childs=True):
     with tempfile.NamedTemporaryFile() as out_file:
 
         # collect flags
-        strace_std_flags = ['-v', '-s4096']
+        strace_std_flags = ['-v',
+                            '-s' + str(MAX_STRACE_STRING_LENGTH)]
         if trace_childs:
             strace_std_flags.append('-f')
         outfile_flags = ['-o', out_file.name]
