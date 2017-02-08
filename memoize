@@ -61,15 +61,15 @@ include_system_deps = True
 
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
+ENCODING = 'utf-8'              # default text encoding
+
 CACHE_DIR = '~/.cache'          # cache directory
 MEMOIZE_DIR = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize')
-ARTIFACT_DIR = os.path.join(MEMOIZE_DIR, 'artifacts', 'SHA-1')
-
-ENCODING = 'utf-8'              # default text encoding
+ARTIFACT_DIR = os.path.join(MEMOIZE_DIR, 'artifacts', HASH_NAME.upper())
 
 INPUT_FILES_NAME = 'input'
 OUTPUT_FILES_NAME = 'output'
-INPUT_FILES_CONTENT_HASH_PREFIX = INPUT_FILES_NAME + ':'
+INPUT_FILES_CONTENT_HASH_PREFIX = INPUT_FILES_NAME + '_' + HASH_NAME.upper() + '-'
 
 MAX_STRACE_STRING_LENGTH = 4096
 
