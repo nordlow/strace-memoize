@@ -278,18 +278,25 @@ def do_it(execve_call, fnames_all):
                     if fname not in rw_list:
                         if os.path.isdir(fname):
                             dir_chash = hashlib.new(HASH_NAME)
-                            dir_filenames_chash(fname, dir_chash)
-                            rw_list[fname] = (os.path.getmtime(fname), dir_chash.hexdigest())
+                            dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
+                            rw_list[fname] = (os.path.getmtime(fname),
+                                              dir_chash.hexdigest())
                         else:
                             rw_list[fname] = os.path.getmtime(fname)
                 elif syscall in ['open_rdonly',
                                  'open_wronly',
                                  'open_rdwr']:
-                    rw_list[fname] = (os.path.getmtime(fname),
-                                      hashlib.new(HASH_NAME, open(fname, 'rb').read()).hexdigest())
-                    if syscall in ['open_wronly',
-                                   'open_rdwr']:
-                        wr_list.add(fname)
+                    if os.path.isdir(fname):
+                        dir_chash = hashlib.new(HASH_NAME)
+                        dir_filenames_chash(fname, dir_chash)
+                        rw_list[fname] = (os.path.getmtime(fname),
+                                          dir_chash.hexdigest())
+                    else:
+                        rw_list[fname] = (os.path.getmtime(fname),
+                                          hashlib.new(HASH_NAME, open(fname, 'rb').read()).hexdigest())
+                        if syscall in ['open_wronly',
+                                       'open_rdwr']:
+                            wr_list.add(fname)
 
     rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
     for rw_file, rw_status in rw_list_sorted_by_fname:
@@ -388,9 +395,12 @@ def process_strace_output_file(out_file):
                 elif syscall == b'open':
                     if out_rest.startswith(b'O_RDONLY'): # read-only
                         fnames_all['open_rdonly'].add(fname)
-                    elif out_rest.startswith(b'O_WRONLY'): # write-only
+                    elif out_rest.startswith(b'O_WRONLY'):
+                        # write-only create into new file
                         fnames_all['open_wronly'].add(fname)
-                    elif out_rest.startswith(b'O_RDWR'): # read-write
+                    elif out_rest.startswith(b'O_RDWR|O_CREAT|O_TRUNC'): # write-only
+                        fnames_all['open_wronly'].add(fname)
+                    elif out_rest.startswith(b'O_RDWR|O_CREAT'): # read-write
                         fnames_all['open_rdwr'].add(fname)
                     else:
                         raise Exception('unknown out_rest' + str(out_rest))
