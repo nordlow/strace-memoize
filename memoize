@@ -191,8 +191,8 @@ def store_input_states(rw_list_sorted_by_fname,
                        wr_list,
                        inputs_dir_path):
 
-    inputs_mtime_chash_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
-    with open(inputs_mtime_chash_path, 'wb') as out_file:
+    inputs_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
+    with open(inputs_path, 'wb') as out_file:
         for input_file, input_status in rw_list_sorted_by_fname:
 
             if input_file in wr_list:
