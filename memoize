@@ -182,7 +182,7 @@ described by parameter CALL_STATE."""
 
     chash = hashlib.new(HASH_NAME)
 
-    execve_fname = call_state[0]
+    execve_fname = call_state[0][1]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
 
     chash.update(os.getcwd().encode(ENCODING))     # current working directory. TODO needed?
@@ -517,11 +517,11 @@ def memoized_run(args,
     # state describe progress called with arguments (args)
     prog = which(args[0])
     sorted_env = sorted(os.environ._data.items()) # hashing needs deterministic order
-    call_state = (prog,
-                  os.path.getmtime(prog),
-                  args,
-                  os.getcwd(),
-                  sorted_env)
+    call_state = (('prog', prog),
+                  ('mtime', os.path.getmtime(prog)),
+                  ('args', args),
+                  ('cwd', os.getcwd()),
+                  ('env', sorted_env))
 
     indent = 0
 
