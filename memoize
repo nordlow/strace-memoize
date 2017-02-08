@@ -162,7 +162,7 @@ def chash_update_tree(chash, curr):
             chash_update_tree(chash, sub)
     elif (isinstance(curr, dict)):
         chash.update(repr(len(curr)).encode(ENCODING))
-        for sub_key, sub_value in curr.items():
+        for sub_key, sub_value in sorted(curr).items(): # requires sortedness
             chash_update_tree(chash, sub_key)
             chash_update_tree(chash, sub_value)
     elif (isinstance(curr, float)):
@@ -516,11 +516,12 @@ def memoized_run(args,
 
     # state describe progress called with arguments (args)
     prog = which(args[0])
+    sorted_env = sorted(os.environ._data.items()) # hashing needs deterministic order
     call_state = (prog,
                   os.path.getmtime(prog),
                   args,
                   os.getcwd(),
-                  sorted(os.environ._data.items()))
+                  sorted_env)
 
     indent = 0
 
