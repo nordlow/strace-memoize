@@ -202,6 +202,7 @@ def store_input_states(rw_list_sorted_by_fname,
                                b'\n')
 
 def store_output(wr_list, inputs_dir_path):
+    """Store output WR_LIST in directory INPUTS_DIR_PATH."""
 
     wr_list_path = os.path.join(inputs_dir_path, 'wr_files')
     wr_list_file = open(wr_list_path, 'wb')
