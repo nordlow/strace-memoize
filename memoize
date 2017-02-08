@@ -410,24 +410,24 @@ def memoized_run(args, trace_childs=True):
                 except ValueError:
                     pass
 
-        do_it(execve_call=first_execve_call,
-              fnames_all=fnames_all)
+    do_it(execve_call=first_execve_call,
+          fnames_all=fnames_all)
+
+    if OPT_VERBOSE:
+
+        print("\n============================= TRACE RESULTS ===================================\n")
 
         if OPT_VERBOSE:
+            indent += 1
+            _print_syscall_fnames(syscall_s='stat', fnames=fnames_all['stat'], indent=indent)
+            _print_syscall_fnames(syscall_s='statfs', fnames=fnames_all['statfs'], indent=indent)
+            _print_syscall_fnames(syscall_s='access', fnames=fnames_all['access'], indent=indent)
+            _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_all['open_rdonly'], indent=indent)
+            _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_all['open_wronly'], indent=indent)
+            _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_all['open_rdwr'], indent=indent)
+            _print_syscall_fnames(syscall_s='openat', fnames=fnames_all['openat'], indent=indent)
 
-            print("\n============================= TRACE RESULTS ===================================\n")
-
-            if OPT_VERBOSE:
-                indent += 1
-                _print_syscall_fnames(syscall_s='stat', fnames=fnames_all['stat'], indent=indent)
-                _print_syscall_fnames(syscall_s='statfs', fnames=fnames_all['statfs'], indent=indent)
-                _print_syscall_fnames(syscall_s='access', fnames=fnames_all['access'], indent=indent)
-                _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_all['open_rdonly'], indent=indent)
-                _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_all['open_wronly'], indent=indent)
-                _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_all['open_rdwr'], indent=indent)
-                _print_syscall_fnames(syscall_s='openat', fnames=fnames_all['openat'], indent=indent)
-
-        return (ret, trace)
+    return (ret, trace)
 
 
 if __name__ == '__main__':
