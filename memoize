@@ -410,7 +410,8 @@ def memoized_run(args, trace_childs=True):
                 except ValueError:
                     pass
 
-        do_it(first_execve_call, fnames_all=fnames_all)
+        do_it(execve_call=first_execve_call,
+              fnames_all=fnames_all)
 
         if OPT_VERBOSE:
 
