@@ -209,14 +209,14 @@ def store_output(wr_list, inputs_dir_path):
 
     for wr_file in wr_list:
 
-        hexdigest = hashlib.new(HASH_NAME,
-                                open(wr_file, 'rb').read()).hexdigest()
-
+        # create artifact storage directory
         artifact_dir = os.path.join(MEMOIZE_DIR, 'artifacts')
         os.makedirs(name=artifact_dir, exist_ok=True)
 
+        # copy artifact to compressed storage
+        hexdigest = hashlib.new(HASH_NAME,
+                                open(wr_file, 'rb').read()).hexdigest()
         artifact_path = os.path.join(artifact_dir, hexdigest + '.gz')
-
         with open(wr_file, 'rb') as src_file:
             with gzip.open(artifact_path, 'wb') as dst_file:
                 shutil.copyfileobj(src_file, dst_file)
