@@ -176,18 +176,18 @@ def chash_update_tree(chash, curr):
         raise Exception("Handle curr type" + str(type(curr)))
 
 
-def execve_chash(execve_call):
+def execve_chash(call_state):
     """Create fingerprint (content hash) of call to system function `execve()`
-described by parameter EXECVE_CALL."""
+described by parameter CALL_STATE."""
 
     chash = hashlib.new(HASH_NAME)
 
-    execve_fname = execve_call[1]
+    execve_fname = call_state[0]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
 
     chash.update(os.getcwd().encode(ENCODING))     # current working directory. TODO needed?
 
-    chash_update_tree(chash, execve_call)         # the rest
+    chash_update_tree(chash, call_state)         # the rest
 
     return chash
 
@@ -309,9 +309,9 @@ def try_load_from_cache(cache_dir_path):
     return None
 
 
-def do_it(execve_call, fnames_all):
+def do_it(call_state, fnames_all):
 
-    execve_hexdigest = execve_chash(execve_call).hexdigest()
+    execve_hexdigest = execve_chash(call_state).hexdigest()
     cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
 
     cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
@@ -395,8 +395,8 @@ def do_it(execve_call, fnames_all):
 
     # write execve call
     open(os.path.join(cache_dir_path,
-                      'execve_call.python-repr'),
-         'w').write(repr(execve_call))
+                      'call_state.python-repr'),
+         'w').write(repr(call_state))
 
     store_inputs(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
                  wr_list=wr_list,
@@ -410,7 +410,7 @@ def do_it(execve_call, fnames_all):
 
 def process_strace_output_file(out_file):
 
-    first_execve_call = None
+    first_execve_state = None
     trace = []                  # trace tree
 
     # hash from system call name to call instances set
@@ -456,10 +456,10 @@ def process_strace_output_file(out_file):
                     env = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
                     # store and fingerprint
-                    execve_call = (syscall, fname, argv, env)
-                    if first_execve_call is None:
-                        first_execve_call = execve_call
-                        trace.append(execve_call)
+                    call_state = (syscall, fname, argv, env)
+                    if first_execve_state is None:
+                        first_execve_state = call_state
+                        trace.append(call_state)
 
                 elif syscall == b'stat':
                     fnames_all['stat'].add(fname)
@@ -488,7 +488,7 @@ def process_strace_output_file(out_file):
             except ValueError:
                 pass
 
-    return (first_execve_call, trace, fnames_all)
+    return (first_execve_state, trace, fnames_all)
 
 
 def which(program):
@@ -515,8 +515,12 @@ def memoized_run(args,
                  trace_childs=True):
 
     # state describe progress called with arguments (args)
-    call_state = (which(args[0]), args, os.getcwd(), os.environ._data)
-    pp(call_state)
+    prog = which(args[0])
+    call_state = (prog,
+                  os.path.getmtime(prog),
+                  args,
+                  os.getcwd(),
+                  sorted(os.environ._data.items()))
 
     indent = 0
 
@@ -534,9 +538,9 @@ def memoized_run(args,
 
         ret = subprocess.run(args=strace_cmd, shell=False)
 
-        (first_execve_call, trace, fnames_all) = process_strace_output_file(out_file=out_file)
+        (_, trace, fnames_all) = process_strace_output_file(out_file=out_file)
 
-        do_it(execve_call=first_execve_call,
+        do_it(call_state=call_state,
               fnames_all=fnames_all)
 
         if OPT_VERBOSE:
