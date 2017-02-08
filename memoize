@@ -205,7 +205,7 @@ def store_inputs(rw_list_sorted_by_fname,
                            file_list=rw_list_sorted_by_fname)
 
     # human readable
-    with open(inputs_path, 'wb') as out_file:
+    with open(inputs_path + '.txt', 'wb') as out_file:
         for input_file, input_status in rw_list_sorted_by_fname:
 
             if input_file in wr_list:
@@ -228,28 +228,32 @@ def store_outputs(wr_list, inputs_dir_path):
     """Store output WR_LIST in directory INPUTS_DIR_PATH."""
 
     wr_list_path = os.path.join(inputs_dir_path, OUTPUTS_FILENAME)
-    wr_list_file = open(wr_list_path, 'wb')
 
-    for wr_file in wr_list:
+    store_file_list_pickle(base_path=wr_list_path,
+                           file_list=wr_list)
 
-        # create artifact storage directory
-        os.makedirs(name=ARTIFACT_DIR, exist_ok=True)
+    # human readable
+    with open(wr_list_path + '.txt', 'wb') as wr_list_file:
+        for wr_file in wr_list:
 
-        # copy artifact to compressed storage
-        hexdigest = hashlib.new(HASH_NAME,
-                                open(wr_file, 'rb').read()).hexdigest()
-        artifact_path = os.path.join(ARTIFACT_DIR, hexdigest + '.gz')
-        with open(wr_file, 'rb') as src_file:
-            with gzip.open(artifact_path, 'wb') as dst_file:
-                shutil.copyfileobj(src_file, dst_file)
+            # create artifact storage directory
+            os.makedirs(name=ARTIFACT_DIR, exist_ok=True)
 
-        # and store hexdigest modification time and path
-        wr_list_file.write(hexdigest.encode('ascii') +
-                           SEPARATOR +
-                           str(os.path.getmtime(wr_file)).encode('ascii') +
-                           SEPARATOR +
-                           wr_file +
-                           b'\n')
+            # copy artifact to compressed storage
+            hexdigest = hashlib.new(HASH_NAME,
+                                    open(wr_file, 'rb').read()).hexdigest()
+            artifact_path = os.path.join(ARTIFACT_DIR, hexdigest + '.gz')
+            with open(wr_file, 'rb') as src_file:
+                with gzip.open(artifact_path, 'wb') as dst_file:
+                    shutil.copyfileobj(src_file, dst_file)
+
+            # and store hexdigest modification time and path
+            wr_list_file.write(hexdigest.encode('ascii') +
+                               SEPARATOR +
+                               str(os.path.getmtime(wr_file)).encode('ascii') +
+                               SEPARATOR +
+                               wr_file +
+                               b'\n')
 
 
 def dir_filenames_chash(dname, chash):
