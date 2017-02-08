@@ -523,7 +523,7 @@ def memoized_run(args,
                   ('args', args),
                   ('cwd', os.getcwd()),
                   ('env', sorted_env))
-    exec_chash_ = exec_chash(exec_state)
+    exec_chash_ = exec_chash(exec_state) # precalculation needed for speed
 
     indent = 0
 
