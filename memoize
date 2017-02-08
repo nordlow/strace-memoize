@@ -213,19 +213,12 @@ def store_inputs(rw_list_sorted_by_fname,
             if input_file in wr_list:
                 continue        # skip output files
 
-            if isinstance(input_status, tuple):
-                out_file.write(binascii.hexlify(input_status[1]) +
-                               SEPARATOR +
-                               str(input_status[0]).encode('ascii') +
-                               SEPARATOR +
-                               input_file +
-                               b'\n')
-            else:
-                raise Exception('is' + input_status + ' an mtime or a hash')
-                out_file.write(str(input_status).encode('ascii') +
-                               SEPARATOR +
-                               input_file +
-                               b'\n')
+            out_file.write(binascii.hexlify(input_status[1]) +
+                           SEPARATOR +
+                           str(input_status[0]).encode('ascii') +
+                           SEPARATOR +
+                           input_file +
+                           b'\n')
 
 def store_outputs(wr_list, inputs_dir_path):
     """Store output WR_LIST in directory INPUTS_DIR_PATH."""
