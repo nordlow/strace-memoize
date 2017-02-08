@@ -521,6 +521,7 @@ def memoized_run(args,
                         print("Try fetching from cache:", fname, mtime, chash)
                         cache_fetch_failed = True
                     else:
+                        pp('reused')
                         pass    # reused
                 else:
                     print("Try fetching from cache:", fname, mtime, chash)
