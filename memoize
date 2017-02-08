@@ -275,21 +275,25 @@ def dir_filenames_chash(dname, chash):
         chash_update_tree(chash, sub_fname)
 
 
-def inputs_have_changed(cache_dir_path, execve_call, fnames_all):
+def try_find_cached(cache_dir_path, execve_call, fnames_all):
     cache_dir_inputs = os.listdir(cache_dir_path)
 
     for rw_base_filename in filter(lambda fname: fname.startswith(INPUTS_FILE_CONTENT_HASH_PREFIX),
                           cache_dir_inputs):
-        rw_file_path = os.path.join(cache_dir_path, rw_base_filename, INPUTS_FILENAME) + '.pickle'
-        with open(rw_file_path, 'rb') as rw_pickle_file:
+
+        inputs_path = os.path.join(cache_dir_path, rw_base_filename, INPUTS_FILENAME) + '.pickle'
+        with open(inputs_path, 'rb') as rw_pickle_file:
             rw_file_list = pickle.load(rw_pickle_file)
+            dirty = False
             for rw_file in rw_file_list:
                 input_fname = rw_file[0]
                 input_mtime = rw_file[1][0]
                 input_chash = rw_file[1][1]
                 if file_is_modified_since(input_fname, input_mtime, input_chash):
-                    print("modified:", input_fname)
-                    return True
+                    dirty = True
+                    break
+            if not dirty:
+                return rw_file_list #
 
     return False
 
@@ -299,11 +303,12 @@ def do_it(execve_call, fnames_all):
     execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
 
-    if not inputs_have_changed(cache_dir_path=cache_dir_path,
-                               execve_call=execve_call,
-                               fnames_all=fnames_all):
-        print('TODO reuse')
-        # return 'cached'
+    cache_hit = try_find_cached(cache_dir_path=cache_dir_path,
+                                execve_call=execve_call,
+                                fnames_all=fnames_all)
+    if cache_hit:
+        print('TODO reuse:')
+        pp(cache_hit)
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
