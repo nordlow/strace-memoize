@@ -253,10 +253,10 @@ def dir_filenames_chash(dname, chash):
 
 def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
     cache_dir_inputs = os.listdir(cache_dir_path)
-    for rw_file in filter(lambda fname: fname.startswith(INPUT_FILES_CONTENT_HASH_PREFIX),
+    for input_file in filter(lambda fname: fname.startswith(INPUT_FILES_CONTENT_HASH_PREFIX),
                            cache_dir_inputs):
-        rw_file_path = os.path.join(cache_dir_path, rw_file, INPUT_FILES_NAME)
-        pp(rw_file_path)
+        input_file_path = os.path.join(cache_dir_path, input_file, INPUT_FILES_NAME)
+        pp(input_file_path)
     return False
 
 
@@ -310,13 +310,13 @@ def do_it(execve_call, fnames_all):
                         wr_list.add(fname)
 
     rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
-    for rw_file, rw_status in rw_list_sorted_by_fname:
+    for input_file, rw_status in rw_list_sorted_by_fname:
 
-        if rw_file in wr_list:
+        if input_file in wr_list:
             continue            # exclude written files, because they are saved
 
-        if os.path.isdir(rw_file):
-            dir_filenames_chash(dname=rw_file,
+        if os.path.isdir(input_file):
+            dir_filenames_chash(dname=input_file,
                                 chash=inputs_chash)
         else:
             chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
