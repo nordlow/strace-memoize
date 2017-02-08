@@ -286,7 +286,10 @@ def dir_filenames_chash(dname, chash):
 
 
 def try_load_from_cache(cache_dir_path):
-    cache_dir_inputs = os.listdir(cache_dir_path)
+    try:
+        cache_dir_inputs = os.listdir(cache_dir_path)
+    except FileNotFoundError:
+        return None
 
     for rw_base_filename in filter(lambda fname: fname.startswith(INPUTS_FILE_CONTENT_HASH_PREFIX),
                                    cache_dir_inputs):
@@ -505,10 +508,10 @@ def memoized_run(args,
     exec_chash = chash_exec_state(exec_state) # precalculation needed for speed
 
     # try fetch from cache
-    cache_dir_path = cache_makedirs(exec_hexdigest=exec_chash.hexdigest())
+    cache_dir_path = cache_dir(exec_hexdigest=exec_chash.hexdigest())
     cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
-    cache_fetch_failed = False
     if cached_outputs_path:
+        cache_fetch_ok = False
         with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
             cached_outputs_list = pickle.load(cached_outputs_pickle_file)
             for cached_output in cached_outputs_list:
@@ -518,18 +521,17 @@ def memoized_run(args,
 
                 if os.path.exists(fname):
                     if file_content_is_modified_since(fname, mtime, chash):
-                        print("TODO fetch from cache:", fname, mtime, chash)
-                        cache_fetch_failed = True
+                        cache_fetch_ok = False
                     else:
                         pp('reused')
-                        pass    # reused
+                        cache_fetch_ok = True
                 else:
                     print("Try fetching from cache:", fname, mtime, chash)
-                    cache_fetch_failed = True
+                    cache_fetch_ok = False
 
-    if not cache_fetch_failed:
-        pp("x")
-        sys.exit(0)
+        if cache_fetch_ok:
+            pp("x")
+            sys.exit(0)
 
     indent = 0
 
