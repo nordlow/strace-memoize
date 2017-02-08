@@ -236,8 +236,14 @@ def store_outputs(wr_list, inputs_dir_path):
 
     wr_list_path = os.path.join(inputs_dir_path, OUTPUTS_FILENAME)
 
+    wr_stats_list = []
+    for fname in sorted(wr_list):
+        wr_stats_list.append((fname,
+                              os.path.getmtime(fname),
+                              hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest()))
+
     store_file_list_pickle(base_path=wr_list_path,
-                           file_list=wr_list)
+                           file_list=wr_stats_list)
 
     # human readable
     with open(wr_list_path + '.txt', 'wb') as wr_list_file:
@@ -275,11 +281,11 @@ def dir_filenames_chash(dname, chash):
         chash_update_tree(chash, sub_fname)
 
 
-def try_find_cached(cache_dir_path, execve_call, fnames_all):
+def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
     cache_dir_inputs = os.listdir(cache_dir_path)
 
     for rw_base_filename in filter(lambda fname: fname.startswith(INPUTS_FILE_CONTENT_HASH_PREFIX),
-                          cache_dir_inputs):
+                                   cache_dir_inputs):
 
         inputs_path = os.path.join(cache_dir_path, rw_base_filename, INPUTS_FILENAME) + '.pickle'
         with open(inputs_path, 'rb') as rw_pickle_file:
@@ -293,9 +299,10 @@ def try_find_cached(cache_dir_path, execve_call, fnames_all):
                     dirty = True
                     break
             if not dirty:
-                return rw_file_list #
+                outputs_path = os.path.join(cache_dir_path, rw_base_filename, OUTPUTS_FILENAME) + '.pickle'
+                return outputs_path
 
-    return False
+    return None
 
 
 def do_it(execve_call, fnames_all):
@@ -303,12 +310,14 @@ def do_it(execve_call, fnames_all):
     execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
 
-    cache_hit = try_find_cached(cache_dir_path=cache_dir_path,
-                                execve_call=execve_call,
-                                fnames_all=fnames_all)
-    if cache_hit:
-        print('TODO reuse:')
-        pp(cache_hit)
+    cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path,
+                                              execve_call=execve_call,
+                                              fnames_all=fnames_all)
+    if cached_outputs_path:
+        with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
+            cached_outputs_list = pickle.load(cached_outputs_pickle_file)
+            print("TODO use cached_outputs_list:")
+            pp(cached_outputs_list)
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
