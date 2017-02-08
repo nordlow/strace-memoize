@@ -315,27 +315,6 @@ def update_cache(exec_state,
 
     cache_dir_path = cache_makedirs(exec_hexdigest=exec_chash_.hexdigest())
 
-    cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
-
-    cache_fetch_failed = False
-    if cached_outputs_path:
-        with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
-            cached_outputs_list = pickle.load(cached_outputs_pickle_file)
-            for cached_output in cached_outputs_list:
-                fname = cached_output[0]
-                mtime = cached_output[1]
-                chash = cached_output[2]
-
-                if os.path.exists(fname):
-                    if file_is_modified_since(fname, mtime, chash):
-                        print("Try fetching from cache:", fname, mtime, chash)
-                        cache_fetch_failed = True
-                    else:
-                        pass    # reused
-                else:
-                    print("Try fetching from cache:", fname, mtime, chash)
-                    cache_fetch_failed = True
-
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
 
@@ -524,6 +503,31 @@ def memoized_run(args,
                   ('cwd', os.getcwd()),
                   ('env', sorted_env))
     exec_chash_ = exec_chash(exec_state) # precalculation needed for speed
+
+    # try fetch from cache
+    cache_dir_path = cache_makedirs(exec_hexdigest=exec_chash_.hexdigest())
+    cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
+    cache_fetch_failed = False
+    if cached_outputs_path:
+        with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
+            cached_outputs_list = pickle.load(cached_outputs_pickle_file)
+            for cached_output in cached_outputs_list:
+                fname = cached_output[0]
+                mtime = cached_output[1]
+                chash = cached_output[2]
+
+                if os.path.exists(fname):
+                    if file_is_modified_since(fname, mtime, chash):
+                        print("Try fetching from cache:", fname, mtime, chash)
+                        cache_fetch_failed = True
+                    else:
+                        pass    # reused
+                else:
+                    print("Try fetching from cache:", fname, mtime, chash)
+                    cache_fetch_failed = True
+
+    if not cache_fetch_failed:
+        sys.exit(0)
 
     indent = 0
 
