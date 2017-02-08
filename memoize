@@ -295,7 +295,9 @@ def store_in_cache(execve_call, fnames_all):
     os.makedirs(name=inputs_dir_path,  exist_ok=True)
 
     # write execve call
-    open(os.path.join(cache_dir_path, 'execve_call.python-repr'), 'w').write(repr(execve_call))
+    open(os.path.join(cache_dir_path,
+                      'execve_call.python-repr'),
+         'w').write(repr(execve_call))
 
     store_input_states(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
                        wr_list=wr_list,
