@@ -39,7 +39,7 @@ import pickle                   # cPickle not available in Python3
 import json
 import getopt
 
-from pprint import pprint as pp
+from pprint import pprint as pp # convenient shorthand
 
 # from dbgio import dln
 
