@@ -499,7 +499,8 @@ def which(program):
 
 
 def memoized_run(args,
-                 trace_childs=True):
+                 trace_childs=True,
+                 env=None):
 
     # state describe progress called with arguments (args)
     prog = which(args[0])
