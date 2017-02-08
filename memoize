@@ -37,9 +37,9 @@ import shutil
 import gzip
 import pickle                   # cPickle not available in Python3
 import json
+import getopt
 
 from pprint import pprint as pp
-import getopt
 
 # from dbgio import dln
 
