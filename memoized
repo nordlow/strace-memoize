@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-# TODO save and load non-zero exist codes in calls to sys.exit()
+# TODO save and load
+# - non-zero exist codes in calls to sys.exit()
+# - stdout
 
 # TODO Update modification times in cache if they are same as written file
 
