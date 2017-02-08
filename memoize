@@ -309,10 +309,9 @@ def try_load_from_cache(cache_dir_path):
     return None
 
 
-def update_cache(exec_state, fnames_all):
+def update_cache(exec_state, exec_chash_, fnames_all):
 
-    exec_hexdigest = exec_chash(exec_state).hexdigest()
-    cache_dir_path = cache_makedirs(execve_hexdigest=exec_hexdigest)
+    cache_dir_path = cache_makedirs(execve_hexdigest=exec_chash_.hexdigest())
 
     cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
 
@@ -522,6 +521,7 @@ def memoized_run(args,
                   ('args', args),
                   ('cwd', os.getcwd()),
                   ('env', sorted_env))
+    exec_chash_ = exec_chash(exec_state)
 
     indent = 0
 
@@ -542,6 +542,7 @@ def memoized_run(args,
         (_, trace, fnames_all) = process_strace_output_file(out_file=out_file)
 
         update_cache(exec_state=exec_state,
+                     exec_chash_=exec_chash_,
                      fnames_all=fnames_all)
 
         if OPT_VERBOSE:
