@@ -79,7 +79,7 @@ MAX_STRACE_STRING_LENGTH = 4096
 SEPARATOR = b'	'               # tab
 
 
-def dir_is_modified_since(fname, mtime, chash):
+def dir_content_is_modified_since(fname, mtime, chash):
     if os.path.getmtime(fname) != mtime: # robust to NFS time skews
         dir_chash = hashlib.new(HASH_NAME)
         dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
@@ -88,18 +88,18 @@ def dir_is_modified_since(fname, mtime, chash):
         return False
 
 
-def regular_file_is_modified_since(fname, mtime, chash):
+def regular_file_content_is_modified_since(fname, mtime, chash):
     if os.path.getmtime(fname) != mtime: # robust to NFS time skews
         return hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest() != chash
     else:
         return False
 
 
-def file_is_modified_since(fname, mtime, chash):
+def file_content_is_modified_since(fname, mtime, chash):
     if os.path.isdir(fname):
-        return dir_is_modified_since(fname, mtime, chash)
+        return dir_content_is_modified_since(fname, mtime, chash)
     else:
-        return regular_file_is_modified_since(fname, mtime, chash)
+        return regular_file_content_is_modified_since(fname, mtime, chash)
 
 
 def _is_content_hashable_file(fname):
@@ -299,7 +299,7 @@ def try_load_from_cache(cache_dir_path):
                 input_fname = rw_file[0]
                 input_mtime = rw_file[1][0]
                 input_chash = rw_file[1][1]
-                if file_is_modified_since(input_fname, input_mtime, input_chash):
+                if file_content_is_modified_since(input_fname, input_mtime, input_chash):
                     dirty = True
                     break
             if not dirty:
@@ -517,8 +517,8 @@ def memoized_run(args,
                 chash = cached_output[2]
 
                 if os.path.exists(fname):
-                    if file_is_modified_since(fname, mtime, chash):
-                        print("Try fetching from cache:", fname, mtime, chash)
+                    if file_content_is_modified_since(fname, mtime, chash):
+                        print("TODO fetch from cache:", fname, mtime, chash)
                         cache_fetch_failed = True
                     else:
                         pp('reused')
