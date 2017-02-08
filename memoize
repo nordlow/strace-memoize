@@ -67,9 +67,9 @@ CACHE_DIR = '~/.cache'          # cache directory
 MEMOIZE_DIR = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize')
 ARTIFACT_DIR = os.path.join(MEMOIZE_DIR, 'artifacts', HASH_NAME.upper())
 
-INPUT_FILES_NAME = 'input'
-OUTPUT_FILES_NAME = 'output'
-INPUT_FILES_CONTENT_HASH_PREFIX = INPUT_FILES_NAME + '_' + HASH_NAME.upper() + '-'
+INPUTS_FILENAME = 'inputs'
+OUTPUTS_FILENAME = 'outputs'
+INPUTS_FILE_CONTENT_HASH_PREFIX = INPUTS_FILENAME + '_' + HASH_NAME.upper() + '-'
 
 MAX_STRACE_STRING_LENGTH = 4096
 
@@ -191,7 +191,7 @@ def store_input_states(rw_list_sorted_by_fname,
                        wr_list,
                        inputs_dir_path):
 
-    inputs_mtime_chash_path = os.path.join(inputs_dir_path, INPUT_FILES_NAME)
+    inputs_mtime_chash_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
     with open(inputs_mtime_chash_path, 'wb') as out_file:
         for input_file, input_status in rw_list_sorted_by_fname:
 
@@ -214,7 +214,7 @@ def store_input_states(rw_list_sorted_by_fname,
 def store_output(wr_list, inputs_dir_path):
     """Store output WR_LIST in directory INPUTS_DIR_PATH."""
 
-    wr_list_path = os.path.join(inputs_dir_path, OUTPUT_FILES_NAME)
+    wr_list_path = os.path.join(inputs_dir_path, OUTPUTS_FILENAME)
     wr_list_file = open(wr_list_path, 'wb')
 
     for wr_file in wr_list:
@@ -253,9 +253,9 @@ def dir_filenames_chash(dname, chash):
 
 def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
     cache_dir_inputs = os.listdir(cache_dir_path)
-    for rw_file in filter(lambda fname: fname.startswith(INPUT_FILES_CONTENT_HASH_PREFIX),
+    for rw_file in filter(lambda fname: fname.startswith(INPUTS_FILE_CONTENT_HASH_PREFIX),
                            cache_dir_inputs):
-        rw_file_path = os.path.join(cache_dir_path, rw_file, INPUT_FILES_NAME)
+        rw_file_path = os.path.join(cache_dir_path, rw_file, INPUTS_FILENAME)
         pp(rw_file_path)
     return False
 
@@ -322,7 +322,7 @@ def do_it(execve_call, fnames_all):
             chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
 
     inputs_dir_path = os.path.join(cache_dir_path,
-                                   INPUT_FILES_CONTENT_HASH_PREFIX +
+                                   INPUTS_FILE_CONTENT_HASH_PREFIX +
                                    inputs_chash.hexdigest())
 
     # create input root directory
