@@ -192,14 +192,14 @@ described by parameter EXEC_STATE."""
     return chash
 
 
-def cache_dir(execve_hexdigest):
+def cache_dir(exec_hexdigest):
     return os.path.join(MEMOIZE_DIR,
-                        execve_hexdigest[0:2],
-                        execve_hexdigest[2:4],
-                        execve_hexdigest[4:])
+                        exec_hexdigest[0:2],
+                        exec_hexdigest[2:4],
+                        exec_hexdigest[4:])
 
-def cache_makedirs(execve_hexdigest):
-    path = cache_dir(execve_hexdigest)
+def cache_makedirs(exec_hexdigest):
+    path = cache_dir(exec_hexdigest)
     os.makedirs(name=path, exist_ok=True)
     return path
 
@@ -309,9 +309,11 @@ def try_load_from_cache(cache_dir_path):
     return None
 
 
-def update_cache(exec_state, exec_chash_, fnames_all):
+def update_cache(exec_state,
+                 exec_chash_,
+                 fnames_all):
 
-    cache_dir_path = cache_makedirs(execve_hexdigest=exec_chash_.hexdigest())
+    cache_dir_path = cache_makedirs(exec_hexdigest=exec_chash_.hexdigest())
 
     cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
 
