@@ -221,7 +221,13 @@ def store_output(wr_list, inputs_dir_path):
             with gzip.open(artifact_path, 'wb') as dst_file:
                 shutil.copyfileobj(src_file, dst_file)
 
-        wr_list_file.write(hexdigest.encode('ascii') + SEPARATOR + wr_file + b'\n')
+        # and store hexdigest modification time and path
+        wr_list_file.write(hexdigest.encode('ascii') +
+                           SEPARATOR +
+                           str(os.path.getmtime(wr_file)).encode('ascii') +
+                           SEPARATOR +
+                           wr_file +
+                           b'\n')
 
 
 def dir_filenames_chash(dname, chash):
