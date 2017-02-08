@@ -52,7 +52,7 @@ SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs', 'access']
 SYS_CALLS_AT = ['openat']       # Linux
 
 # content hashing algorithm
-HASH_NAME = 'sha1'
+HASH_NAME = 'sha256'
 
 INDENT_STEP = 2                 # number of spaces per indentation level
 
@@ -317,7 +317,11 @@ def do_it(execve_call, fnames_all):
         with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
             cached_outputs_list = pickle.load(cached_outputs_pickle_file)
             print("TODO use cached_outputs_list:")
-            pp(cached_outputs_list)
+            for cached_output in cached_outputs_list:
+                fname = cached_output[0]
+                mtime = cached_output[1]
+                chash = cached_output[2]
+                print(fname, mtime, chash)
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
