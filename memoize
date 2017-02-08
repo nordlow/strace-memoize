@@ -42,9 +42,9 @@ from pprint import pprint as pp # convenient shorthand
 # show results
 OPT_VERBOSE = False # False, True, 'raw'
 
-SYS_CALLS = ["execve", "open", "openat", "stat", "stat64", "statfs", "access"]
-RAW_CALLS = ["stat"]
-SYS_CALLS_AT = ["openat"]       # Linux
+SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs', 'access']
+RAW_CALLS = ['stat']
+SYS_CALLS_AT = ['openat']       # Linux
 
 # content hashing algorithm
 HASH_NAME = 'sha1'
