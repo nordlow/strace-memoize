@@ -220,6 +220,7 @@ def store_inputs(rw_list_sorted_by_fname,
                            input_file +
                            b'\n')
 
+
 def store_outputs(wr_list, inputs_dir_path):
     """Store output WR_LIST in directory INPUTS_DIR_PATH."""
 
