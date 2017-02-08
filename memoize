@@ -250,6 +250,11 @@ def dir_filenames_chash(dname, chash):
 
 
 def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
+    # pp(cache_dir_path)
+    cache_dir_inputs = os.listdir(cache_dir_path)
+    for rw_files in filter(lambda fname: fname.startswith(RW_FILES_CONTENT_HASH_PREFIX),
+                           cache_dir_inputs):
+        pp(rw_files)
     return False
 
 
