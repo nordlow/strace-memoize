@@ -21,7 +21,7 @@
 
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
-# TODO should we include result of `os.getcwd()` in execve_chash?
+# TODO should we include result of `os.getcwd()` in exec_chash?
 
 # TODO directory chash is chash of list of file names in directory
 
@@ -176,18 +176,18 @@ def chash_update_tree(chash, curr):
         raise Exception("Handle curr type" + str(type(curr)))
 
 
-def execve_chash(call_state):
+def exec_chash(exec_state):
     """Create fingerprint (content hash) of call to system function `execve()`
-described by parameter CALL_STATE."""
+described by parameter EXEC_STATE."""
 
     chash = hashlib.new(HASH_NAME)
 
-    execve_fname = call_state[0][1]
+    execve_fname = exec_state[0][1]
     chash.update(open(execve_fname, 'rb').read()) # contents of executed binary
 
     chash.update(os.getcwd().encode(ENCODING))     # current working directory. TODO needed?
 
-    chash_update_tree(chash, call_state)         # the rest
+    chash_update_tree(chash, exec_state)         # the rest
 
     return chash
 
@@ -309,10 +309,10 @@ def try_load_from_cache(cache_dir_path):
     return None
 
 
-def do_it(call_state, fnames_all):
+def update_cache(exec_state, fnames_all):
 
-    execve_hexdigest = execve_chash(call_state).hexdigest()
-    cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
+    exec_hexdigest = exec_chash(exec_state).hexdigest()
+    cache_dir_path = cache_makedirs(execve_hexdigest=exec_hexdigest)
 
     cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
 
@@ -395,8 +395,8 @@ def do_it(call_state, fnames_all):
 
     # write execve call
     open(os.path.join(cache_dir_path,
-                      'call_state.python-repr'),
-         'w').write(repr(call_state))
+                      'exec_state.python-repr'),
+         'w').write(repr(exec_state))
 
     store_inputs(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
                  wr_list=wr_list,
@@ -456,10 +456,10 @@ def process_strace_output_file(out_file):
                     env = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
                     # store and fingerprint
-                    call_state = (syscall, fname, argv, env)
+                    exec_state = (syscall, fname, argv, env)
                     if first_execve_state is None:
-                        first_execve_state = call_state
-                        trace.append(call_state)
+                        first_execve_state = exec_state
+                        trace.append(exec_state)
 
                 elif syscall == b'stat':
                     fnames_all['stat'].add(fname)
@@ -517,7 +517,7 @@ def memoized_run(args,
     # state describe progress called with arguments (args)
     prog = which(args[0])
     sorted_env = sorted(os.environ._data.items()) # hashing needs deterministic order
-    call_state = (('prog', prog),
+    exec_state = (('prog', prog),
                   ('mtime', os.path.getmtime(prog)),
                   ('args', args),
                   ('cwd', os.getcwd()),
@@ -541,8 +541,8 @@ def memoized_run(args,
 
         (_, trace, fnames_all) = process_strace_output_file(out_file=out_file)
 
-        do_it(call_state=call_state,
-              fnames_all=fnames_all)
+        update_cache(exec_state=exec_state,
+                     fnames_all=fnames_all)
 
         if OPT_VERBOSE:
 
