@@ -313,15 +313,25 @@ def do_it(execve_call, fnames_all):
     cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path,
                                               execve_call=execve_call,
                                               fnames_all=fnames_all)
+
+    cache_fetch_failed = False
     if cached_outputs_path:
         with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
             cached_outputs_list = pickle.load(cached_outputs_pickle_file)
-            print("TODO use cached_outputs_list:")
             for cached_output in cached_outputs_list:
                 fname = cached_output[0]
                 mtime = cached_output[1]
                 chash = cached_output[2]
-                print(fname, mtime, chash)
+
+                if os.path.exists(fname):
+                    if file_is_modified_since(fname, mtime, chash):
+                        print("Try fetching from cache:", fname, mtime, chash)
+                        cache_fetch_failed = True
+                    else:
+                        pass    # reused
+                else:
+                    print("Try fetching from cache:", fname, mtime, chash)
+                    cache_fetch_failed = True
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
