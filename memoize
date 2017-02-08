@@ -317,10 +317,9 @@ def do_it(execve_call, fnames_all):
     return 'uncached'
 
 
-def memoized_run(args, trace_childs=True):
+def process_strace_output_file(out_file):
 
-    indent = 0
-
+    first_execve_call = None
     trace = []                  # trace tree
 
     # hash from system call name to call instances set
@@ -333,7 +332,75 @@ def memoized_run(args, trace_childs=True):
     fnames_all['openat']      = set()
     fnames_all['access']      = set()
 
-    first_execve_call = None
+    out_file.seek(0)              # reset it
+    for out_line in out_file:
+        if b'ENOENT' not in out_line: # skip failing calls
+            # print(out_line)
+
+            pid_, out_rest = out_line.split(None, 1)
+
+            pid = int(pid_) # decode PID integer
+            # print(pid)
+
+            try:
+                syscall, out_rest = out_rest.split(b'(', 1)
+                syscall_s = bytes.decode(syscall)
+                # print(syscall_s)
+
+                fname, out_rest = out_rest.split(b', ', 1)
+                fname = os.path.normpath(fname[1:-1])
+
+                if (fname.startswith(b'//usr') or
+                    fname.startswith(b'//lib')):
+                    fname = fname[1:] # skip first slash
+
+                # in decreasing probability
+                if syscall == b'execve':
+                    # get args
+                    _args, out_rest = out_rest.split(b'], [', 1)
+                    argv = eval(_args[1:]) # tuple of strings
+
+                    # get environment
+                    _env, out_rest = out_rest.split(b']) = ', 1)
+                    env = eval(_env) # tuple of strings containing ENV_VAR=VALE
+
+                    # store and fingerprint
+                    execve_call = (syscall, fname, argv, env)
+                    if first_execve_call is None:
+                        first_execve_call = execve_call
+                        trace.append(execve_call)
+
+                elif syscall == b'stat':
+                    fnames_all['stat'].add(fname)
+                elif syscall == b'statfs':
+                    fnames_all['statfs'].add(fname)
+                elif syscall == b'openat':
+                    fnames_all['openat'].add(fname)
+                    # print(fname, out_rest)
+                elif syscall == b'open':
+                    if out_rest.startswith(b'O_RDONLY'): # read-only
+                        fnames_all['open_rdonly'].add(fname)
+                    elif out_rest.startswith(b'O_WRONLY'): # write-only
+                        fnames_all['open_wronly'].add(fname)
+                    elif out_rest.startswith(b'O_RDWR'): # read-write
+                        fnames_all['open_rdwr'].add(fname)
+                    else:
+                        raise Exception('unknown out_rest' + str(out_rest))
+                elif syscall == b'access':
+                    fnames_all['access'].add(fname)
+                else:
+                    print('Handle system call ' + syscall_s)
+
+            except ValueError:
+                pass
+
+    return (first_execve_call, trace, fnames_all)
+
+
+
+def memoized_run(args, trace_childs=True):
+
+    indent = 0
 
     with tempfile.NamedTemporaryFile() as out_file:
 
@@ -348,86 +415,26 @@ def memoized_run(args, trace_childs=True):
 
         ret = subprocess.run(args=strace_cmd, shell=False)
 
-        out_file.seek(0)              # reset it
-        for out_line in out_file:
-            if b'ENOENT' not in out_line: # skip failing calls
-                # print(out_line)
+        (first_execve_call, trace, fnames_all) = process_strace_output_file(out_file=out_file)
 
-                pid_, out_rest = out_line.split(None, 1)
-
-                pid = int(pid_) # decode PID integer
-                # print(pid)
-
-                try:
-                    syscall, out_rest = out_rest.split(b'(', 1)
-                    syscall_s = bytes.decode(syscall)
-                    # print(syscall_s)
-
-                    fname, out_rest = out_rest.split(b', ', 1)
-                    fname = os.path.normpath(fname[1:-1])
-
-                    if (fname.startswith(b'//usr') or
-                        fname.startswith(b'//lib')):
-                        fname = fname[1:] # skip first slash
-
-                    # in decreasing probability
-                    if syscall == b'execve':
-                        # get args
-                        _args, out_rest = out_rest.split(b'], [', 1)
-                        argv = eval(_args[1:]) # tuple of strings
-
-                        # get environment
-                        _env, out_rest = out_rest.split(b']) = ', 1)
-                        env = eval(_env) # tuple of strings containing ENV_VAR=VALE
-
-                        # store and fingerprint
-                        execve_call = (syscall, fname, argv, env)
-                        if first_execve_call is None:
-                            first_execve_call = execve_call
-                        trace.append(execve_call)
-
-                    elif syscall == b'stat':
-                        fnames_all['stat'].add(fname)
-                    elif syscall == b'statfs':
-                        fnames_all['statfs'].add(fname)
-                    elif syscall == b'openat':
-                        fnames_all['openat'].add(fname)
-                        # print(fname, out_rest)
-                    elif syscall == b'open':
-                        if out_rest.startswith(b'O_RDONLY'): # read-only
-                            fnames_all['open_rdonly'].add(fname)
-                        elif out_rest.startswith(b'O_WRONLY'): # write-only
-                            fnames_all['open_wronly'].add(fname)
-                        elif out_rest.startswith(b'O_RDWR'): # read-write
-                            fnames_all['open_rdwr'].add(fname)
-                        else:
-                            raise Exception('unknown out_rest' + str(out_rest))
-                    elif syscall == b'access':
-                        fnames_all['access'].add(fname)
-                    else:
-                        print('Handle system call ' + syscall_s)
-
-                except ValueError:
-                    pass
-
-    do_it(execve_call=first_execve_call,
-          fnames_all=fnames_all)
-
-    if OPT_VERBOSE:
-
-        print("\n============================= TRACE RESULTS ===================================\n")
+        do_it(execve_call=first_execve_call,
+              fnames_all=fnames_all)
 
         if OPT_VERBOSE:
-            indent += 1
-            _print_syscall_fnames(syscall_s='stat', fnames=fnames_all['stat'], indent=indent)
-            _print_syscall_fnames(syscall_s='statfs', fnames=fnames_all['statfs'], indent=indent)
-            _print_syscall_fnames(syscall_s='access', fnames=fnames_all['access'], indent=indent)
-            _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_all['open_rdonly'], indent=indent)
-            _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_all['open_wronly'], indent=indent)
-            _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_all['open_rdwr'], indent=indent)
-            _print_syscall_fnames(syscall_s='openat', fnames=fnames_all['openat'], indent=indent)
 
-    return (ret, trace)
+            print("\n============================= TRACE RESULTS ===================================\n")
+
+            if OPT_VERBOSE:
+                indent += 1
+                _print_syscall_fnames(syscall_s='stat', fnames=fnames_all['stat'], indent=indent)
+                _print_syscall_fnames(syscall_s='statfs', fnames=fnames_all['statfs'], indent=indent)
+                _print_syscall_fnames(syscall_s='access', fnames=fnames_all['access'], indent=indent)
+                _print_syscall_fnames(syscall_s='open-rdonly', fnames=fnames_all['open_rdonly'], indent=indent)
+                _print_syscall_fnames(syscall_s='open-wronly', fnames=fnames_all['open_wronly'], indent=indent)
+                _print_syscall_fnames(syscall_s='open-rdwr', fnames=fnames_all['open_rdwr'], indent=indent)
+                _print_syscall_fnames(syscall_s='openat', fnames=fnames_all['openat'], indent=indent)
+
+        return (ret, trace)
 
 
 if __name__ == '__main__':
