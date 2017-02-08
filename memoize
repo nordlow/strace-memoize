@@ -13,8 +13,6 @@
 
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
-# TODO replace encode('utf-8') => encode('ascii')
-
 # TODO should we include result of `os.getcwd()` in execve_chash?
 
 # TODO directory chash is chash of list of file names in directory
