@@ -5,6 +5,7 @@
 
 # TODO Ask Claes Wallin how to fingerprint the Linux kernel version or distribution
 # - cat /proc/version
+# - cat /proc/mounts
 
 # TODO use gcc -pipe
 
