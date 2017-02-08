@@ -176,7 +176,7 @@ def chash_update_tree(chash, curr):
         raise Exception("Handle curr type" + str(type(curr)))
 
 
-def exec_chash(exec_state):
+def chash_exec(exec_state):
     """Create fingerprint (content hash) of call to system function `execve()`
 described by parameter EXEC_STATE."""
 
@@ -502,7 +502,7 @@ def memoized_run(args,
                   ('args', args),
                   ('cwd', os.getcwd()),
                   ('env', sorted_env))
-    exec_chash_ = exec_chash(exec_state) # precalculation needed for speed
+    exec_chash_ = chash_exec(exec_state) # precalculation needed for speed
 
     # try fetch from cache
     cache_dir_path = cache_makedirs(exec_hexdigest=exec_chash_.hexdigest())
@@ -528,6 +528,7 @@ def memoized_run(args,
                     cache_fetch_failed = True
 
     if not cache_fetch_failed:
+        pp("x")
         sys.exit(0)
 
     indent = 0
