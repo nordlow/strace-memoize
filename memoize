@@ -75,15 +75,27 @@ MAX_STRACE_STRING_LENGTH = 4096
 SEPARATOR = b'	'               # tab
 
 
-def dir_is_modified_since(dname, mtime):
-    return os.path.getmtime(dname) != mtime # robust to NFS time skews
+def dir_is_modified_since(fname, mtime, chash):
+    if os.path.getmtime(fname) != mtime: # robust to NFS time skews
+        dir_chash = hashlib.new(HASH_NAME)
+        dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
+        return dir_chash.digest() != chash
+    else:
+        return False
+
+
+def regular_file_is_modified_since(fname, mtime, chash):
+    if os.path.getmtime(fname) != mtime: # robust to NFS time skews
+        return hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest() != chash
+    else:
+        return False
 
 
 def file_is_modified_since(fname, mtime, chash):
-    if os.path.getmtime(fname) != mtime: # robust to NFS time skews
-        return hashlib.new(HASH_NAME, open(fname, 'rb').read) != chash
+    if os.path.isdir(fname):
+        return dir_is_modified_since(fname, mtime, chash)
     else:
-        return False
+        return regular_file_is_modified_since(fname, mtime, chash)
 
 
 def _is_content_hashable_file(fname):
@@ -198,7 +210,6 @@ def store_file_list_pickle(base_path, file_list):
 def store_inputs(rw_list_sorted_by_fname,
                  wr_list,
                  inputs_dir_path):
-    print("inputs_dir_path:", inputs_dir_path)
 
     inputs_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
 
@@ -264,11 +275,22 @@ def dir_filenames_chash(dname, chash):
         chash_update_tree(chash, sub_fname)
 
 
-def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
+def inputs_have_changed(cache_dir_path, execve_call, fnames_all):
     cache_dir_inputs = os.listdir(cache_dir_path)
-    for rw_file in filter(lambda fname: fname.startswith(INPUTS_FILE_CONTENT_HASH_PREFIX),
-                           cache_dir_inputs):
-        rw_file_path = os.path.join(cache_dir_path, rw_file, INPUTS_FILENAME)
+
+    for rw_base_filename in filter(lambda fname: fname.startswith(INPUTS_FILE_CONTENT_HASH_PREFIX),
+                          cache_dir_inputs):
+        rw_file_path = os.path.join(cache_dir_path, rw_base_filename, INPUTS_FILENAME) + '.pickle'
+        with open(rw_file_path, 'rb') as rw_pickle_file:
+            rw_file_list = pickle.load(rw_pickle_file)
+            for rw_file in rw_file_list:
+                input_fname = rw_file[0]
+                input_mtime = rw_file[1][0]
+                input_chash = rw_file[1][1]
+                if file_is_modified_since(input_fname, input_mtime, input_chash):
+                    print("modified:", input_fname)
+                    return True
+
     return False
 
 
@@ -277,10 +299,11 @@ def do_it(execve_call, fnames_all):
     execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
 
-    if try_load_from_cache(cache_dir_path=cache_dir_path,
-                           execve_call=execve_call,
-                           fnames_all=fnames_all):
-        return 'cached'
+    if not inputs_have_changed(cache_dir_path=cache_dir_path,
+                               execve_call=execve_call,
+                               fnames_all=fnames_all):
+        print('TODO reuse')
+        # return 'cached'
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
