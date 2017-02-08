@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO save and load non-zero exist codes in calls to sys.exit()
+
 # TODO Update modification times in cache if they are same as written file
 
 # TODO Add `env` argument to `memoized_run` and use it instead of `os.environ._data`
@@ -285,7 +287,7 @@ def dir_filenames_chash(dname, chash):
         chash_update_tree(chash, sub_fname)
 
 
-def try_load_from_cache(cache_dir_path):
+def try_load_outputs_path_from_cache(cache_dir_path):
     try:
         cache_dir_inputs = os.listdir(cache_dir_path)
     except FileNotFoundError:
@@ -509,7 +511,7 @@ def memoized_run(args,
 
     # try fetch from cache
     cache_dir_path = cache_dir(exec_hexdigest=exec_chash.hexdigest())
-    cached_outputs_path = try_load_from_cache(cache_dir_path=cache_dir_path)
+    cached_outputs_path = try_load_outputs_path_from_cache(cache_dir_path=cache_dir_path)
     if cached_outputs_path:
         cache_fetch_ok = False
         with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
@@ -531,7 +533,7 @@ def memoized_run(args,
 
         if cache_fetch_ok:
             pp("x")
-            sys.exit(0)
+            sys.exit(0)         # TODO handle non-zero previous return code
 
     indent = 0
 
