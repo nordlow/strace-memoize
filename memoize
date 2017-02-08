@@ -3,7 +3,7 @@
 # TODO ask on StackExchange if there's a flag to strace to not show failing
 # system calls
 
-# TODO Ask Claes Wallin how to fingerprint the linux kernel version or distribution
+# TODO Ask Claes Wallin how to fingerprint the Linux kernel version or distribution
 
 # TODO use gcc -pipe
 
