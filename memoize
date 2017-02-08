@@ -31,7 +31,6 @@ import hashlib
 import tempfile
 import shutil
 import gzip
-# import lzma
 import pickle                   # cPickle not available in Python3
 import json
 import getopt
