@@ -38,7 +38,7 @@ import tempfile
 import shutil
 import gzip
 import pickle                   # cPickle not available in Python3
-import json
+import binascii
 import getopt
 
 from pprint import pprint as pp # convenient shorthand
@@ -155,8 +155,10 @@ def chash_update_tree(chash, curr):
     elif (isinstance(curr, filter)):
         for sub in curr:
             chash_update_tree(chash, sub)
+    elif type(curr) is type(hashlib.new(HASH_NAME)): # TODO use _hashlib.HASH instead
+        chash.update(curr.hexdigest().encode(ENCODING))
     else:
-        raise Exception("Handle curr type")
+        raise Exception("Handle curr type" + str(type(curr)))
 
 
 def execve_chash(execve_call):
@@ -195,8 +197,8 @@ def store_file_list_pickle(base_path, file_list):
 
 
 def store_inputs(rw_list_sorted_by_fname,
-                       wr_list,
-                       inputs_dir_path):
+                 wr_list,
+                 inputs_dir_path):
     print("inputs_dir_path:", inputs_dir_path)
 
     inputs_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
@@ -212,13 +214,14 @@ def store_inputs(rw_list_sorted_by_fname,
                 continue        # skip output files
 
             if isinstance(input_status, tuple):
-                out_file.write(input_status[1].encode('ascii') +
+                out_file.write(binascii.hexlify(input_status[1]) +
                                SEPARATOR +
                                str(input_status[0]).encode('ascii') +
                                SEPARATOR +
                                input_file +
                                b'\n')
             else:
+                raise Exception('is' + input_status + ' an mtime or a hash')
                 out_file.write(str(input_status).encode('ascii') +
                                SEPARATOR +
                                input_file +
@@ -306,7 +309,7 @@ def do_it(execve_call, fnames_all):
                         dir_chash = hashlib.new(HASH_NAME)
                         dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
                         rw_list[fname] = (os.path.getmtime(fname),
-                                          dir_chash.hexdigest())
+                                          dir_chash.digest())
                     else:
                         rw_list[fname] = os.path.getmtime(fname)
             elif syscall in ['open_rdonly',
@@ -317,10 +320,10 @@ def do_it(execve_call, fnames_all):
                     dir_chash = hashlib.new(HASH_NAME)
                     dir_filenames_chash(fname, dir_chash)
                     rw_list[fname] = (os.path.getmtime(fname),
-                                      dir_chash.hexdigest())
+                                      dir_chash.digest())
                 else:
                     rw_list[fname] = (os.path.getmtime(fname),
-                                      hashlib.new(HASH_NAME, open(fname, 'rb').read()).hexdigest())
+                                      hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest())
                     if syscall in ['open_wronly',
                                    'open_rdwr']:
                         wr_list.add(fname)
