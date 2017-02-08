@@ -67,7 +67,8 @@ ARTIFACT_DIR = os.path.join(MEMOIZE_DIR, 'artifacts', 'SHA-1')
 
 ENCODING = 'utf-8'              # default text encoding
 
-RW_FILES_CONTENT_HASH_PREFIX = 'rw_files_content_hash:'
+RW_FILES_NAME = 'rw_files'
+RW_FILES_CONTENT_HASH_PREFIX = RW_FILES_NAME + '_content_hash:'
 
 MAX_STRACE_STRING_LENGTH = 4096
 
@@ -189,7 +190,7 @@ def store_input_states(rw_list_sorted_by_fname,
                        wr_list,
                        inputs_dir_path):
 
-    inputs_mtime_chash_path = os.path.join(inputs_dir_path, "rw_files")
+    inputs_mtime_chash_path = os.path.join(inputs_dir_path, RW_FILES_NAME)
     with open(inputs_mtime_chash_path, 'wb') as out_file:
         for input_file, input_status in rw_list_sorted_by_fname:
 
@@ -250,11 +251,11 @@ def dir_filenames_chash(dname, chash):
 
 
 def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
-    # pp(cache_dir_path)
     cache_dir_inputs = os.listdir(cache_dir_path)
-    for rw_files in filter(lambda fname: fname.startswith(RW_FILES_CONTENT_HASH_PREFIX),
+    for rw_file in filter(lambda fname: fname.startswith(RW_FILES_CONTENT_HASH_PREFIX),
                            cache_dir_inputs):
-        pp(rw_files)
+        rw_file_path = os.path.join(cache_dir_path, rw_file, RW_FILES_NAME)
+        pp(rw_file_path)
     return False
 
 
