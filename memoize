@@ -31,6 +31,7 @@ import hashlib
 import tempfile
 import shutil
 import gzip
+import lzma
 import pickle                   # cPickle not available in Python3
 import json
 import getopt
@@ -57,6 +58,7 @@ SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
 
 CACHE_DIR = '~/.cache'          # cache directory
 MEMOIZE_DIR = os.path.join(os.path.expanduser(CACHE_DIR), 'memoize')
+ARTIFACT_DIR = os.path.join(MEMOIZE_DIR, 'artifacts', 'SHA-1')
 
 ENCODING = 'utf-8'              # default text encoding
 
@@ -204,13 +206,12 @@ def store_output(wr_list, inputs_dir_path):
     for wr_file in wr_list:
 
         # create artifact storage directory
-        artifact_dir = os.path.join(MEMOIZE_DIR, 'artifacts')
-        os.makedirs(name=artifact_dir, exist_ok=True)
+        os.makedirs(name=ARTIFACT_DIR, exist_ok=True)
 
         # copy artifact to compressed storage
         hexdigest = hashlib.new(HASH_NAME,
                                 open(wr_file, 'rb').read()).hexdigest()
-        artifact_path = os.path.join(artifact_dir, hexdigest + '.gz')
+        artifact_path = os.path.join(ARTIFACT_DIR, hexdigest + '.gz')
         with open(wr_file, 'rb') as src_file:
             with gzip.open(artifact_path, 'wb') as dst_file:
                 shutil.copyfileobj(src_file, dst_file)
@@ -246,7 +247,7 @@ def store_in_cache(execve_call, fnames_all):
 
     # get inputs and outputs
     rw_list = {}       # read or/and written file names => mtime and optional chash
-    wr_list = set()             # written file names
+    wr_list = set()    # written file names
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
             if not re.match(pattern=SYSTEM_FILE_RE,
