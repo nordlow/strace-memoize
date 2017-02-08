@@ -241,10 +241,19 @@ def dir_filenames_chash(dname, chash):
         chash_update_tree(chash, sub_fname)
 
 
-def store_in_cache(execve_call, fnames_all):
+def try_load_from_cache(cache_dir_path, execve_call, fnames_all):
+    return False
+
+
+def load_or_store_in_cache(execve_call, fnames_all):
 
     execve_hexdigest = execve_chash(execve_call).hexdigest()
     cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
+
+    if try_load_from_cache(cache_dir_path=cache_dir_path,
+                           execve_call=execve_call,
+                           fnames_all=fnames_all):
+        return 'cached'
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
@@ -304,6 +313,8 @@ def store_in_cache(execve_call, fnames_all):
 
     store_output(wr_list=wr_list,
                  inputs_dir_path=inputs_dir_path)
+
+    return 'uncached'
 
 
 def memoized_run(args, trace_childs=True):
@@ -399,7 +410,7 @@ def memoized_run(args, trace_childs=True):
                 except ValueError:
                     pass
 
-        store_in_cache(first_execve_call, fnames_all=fnames_all)
+        load_or_store_in_cache(first_execve_call, fnames_all=fnames_all)
 
         if OPT_VERBOSE:
 
