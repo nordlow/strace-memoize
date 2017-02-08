@@ -39,7 +39,7 @@ import pickle                   # cPickle not available in Python3
 import json
 
 from pprint import pprint as pp
-from getopt import getopt
+import getopt
 
 # from dbgio import dln
 
@@ -421,7 +421,7 @@ def memoized_run(args, trace_childs=True):
 
 if __name__ == '__main__':
 
-    opts, args = getopt(sys.argv[1:], 'dv:')
+    opts, args = getopt.getopt(sys.argv[1:], 'dv:')
 
     for opt, value in opts:
         if opt == '-v':
