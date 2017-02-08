@@ -165,11 +165,14 @@ described by parameter EXECVE_CALL."""
     return chash
 
 
-def cache_makedirs(hexdigest):
-    path = os.path.join(MEMOIZE_DIR,
-                        hexdigest[0:2],
-                        hexdigest[2:4],
-                        hexdigest[4:])
+def cache_dir(execve_hexdigest):
+    return os.path.join(MEMOIZE_DIR,
+                        execve_hexdigest[0:2],
+                        execve_hexdigest[2:4],
+                        execve_hexdigest[4:])
+
+def cache_makedirs(execve_hexdigest):
+    path = cache_dir(execve_hexdigest)
     os.makedirs(name=path, exist_ok=True)
     return path
 
@@ -241,7 +244,7 @@ def dir_filenames_chash(dname, chash):
 def store_in_cache(execve_call, fnames_all):
 
     execve_hexdigest = execve_chash(execve_call).hexdigest()
-    cache_dir_path = cache_makedirs(execve_hexdigest)
+    cache_dir_path = cache_makedirs(execve_hexdigest=execve_hexdigest)
 
     # fingerprint inputs
     inputs_chash = hashlib.new(HASH_NAME)
