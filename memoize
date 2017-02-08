@@ -22,6 +22,8 @@
 # TODO add server that does inotify watches for all dirs containing input and
 # output files
 
+# TODO Add automatic distribution of execution via chroot. System libs and programs can be hard-linked out read-only from cache
+
 import sys
 import os
 import subprocess
@@ -65,7 +67,7 @@ RW_FILES_CONTENT_HASH_PREFIX = 'rw_files_content_hash:'
 
 MAX_STRACE_STRING_LENGTH = 4096
 
-SEPARATOR = b'	'           # tab
+SEPARATOR = b'	'               # tab
 
 
 def dir_is_modified_since(dname, mtime):
