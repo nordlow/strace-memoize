@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO Detect file system race conditions in child processes
+
 # TODO ask on StackExchange if there's a flag to strace to not show failing
 # system calls
 
