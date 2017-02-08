@@ -188,7 +188,7 @@ def cache_makedirs(execve_hexdigest):
 
 
 def store_inputs_pickle(inputs_path, inputs):
-    """Store inputs INPUTS in file at INPUTS_PATH."""
+    """Store input file list INPUTS in a file at INPUTS_PATH."""
 
     with open(inputs_path + '.pickle', 'wb') as out_file:
         pickle.dump(inputs, out_file, pickle.DEFAULT_PROTOCOL)
