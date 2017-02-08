@@ -23,8 +23,6 @@
 
 # TODO parse 'st_mtime using Python's datetime.strptime(some_string, '')
 
-# TODO should we include result of `os.getcwd()` in exec_chash?
-
 # TODO directory chash is chash of list of file names in directory
 
 # TODO use ltrace and reduce env deps by catching all getenv
