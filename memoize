@@ -67,9 +67,9 @@ ARTIFACT_DIR = os.path.join(MEMOIZE_DIR, 'artifacts', 'SHA-1')
 
 ENCODING = 'utf-8'              # default text encoding
 
-RW_FILES_NAME = 'rw_files'
-WR_FILES_NAME = 'wr_files'
-RW_FILES_CONTENT_HASH_PREFIX = RW_FILES_NAME + '_content_hash:'
+RW_FILES_NAME = 'input'
+WR_FILES_NAME = 'output'
+RW_FILES_CONTENT_HASH_PREFIX = RW_FILES_NAME + ':'
 
 MAX_STRACE_STRING_LENGTH = 4096
 
