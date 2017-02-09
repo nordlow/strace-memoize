@@ -235,18 +235,19 @@ def store_inputs(rw_list_sorted_by_fname,
                            file_list=rw_list_sorted_by_fname)
 
     # human readable
-    with open(inputs_path + '.txt', 'wb') as out_file:
-        for input_file, input_status in rw_list_sorted_by_fname:
+    with open(inputs_path + '.txt', 'wb') as inputs_file:
+        for input_fname, input_status in rw_list_sorted_by_fname:
 
-            if input_file in wr_list:
+            if input_fname in wr_list:
                 continue        # skip output files
 
-            out_file.write(binascii.hexlify(input_status[1]) +
-                           SEPARATOR +
-                           str(input_status[0]).encode('ascii') +
-                           SEPARATOR +
-                           input_file +
-                           b'\n')
+            pp(input_status)
+            inputs_file.write(binascii.hexlify(input_status[1]) +
+                              SEPARATOR +
+                              str(input_status[0]).encode('ascii') +
+                              SEPARATOR +
+                              input_fname +
+                              b'\n')
 
 
 def store_outputs(wr_list, inputs_dir_path):
@@ -357,7 +358,8 @@ def update_cache(exec_state,
                     else:
                         if re.match(pattern=SYSTEM_FILE_RE,
                                     string=bytes.decode(fname)):
-                            rw_list[fname] = os.path.getmtime(fname)
+                            rw_list[fname] = (os.path.getmtime(fname),
+                                              None)
             elif syscall == 'open_dir_rdonly':
                 dir_chash = hashlib.new(HASH_NAME)
                 dir_filenames_chash(fname, dir_chash)
@@ -392,8 +394,8 @@ def update_cache(exec_state,
             dir_filenames_chash(dname=rw_file,
                                 chash=inputs_chash)
         else:
-            pp((rw_file, rw_status))
-            chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
+            if rw_status[1] != None:
+                chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
 
     inputs_dir_path = os.path.join(cache_dir_path,
                                    INPUTS_FILE_CONTENT_HASH_PREFIX +
