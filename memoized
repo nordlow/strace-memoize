@@ -84,6 +84,8 @@ MAX_STRACE_STRING_LENGTH = 4096
 
 SEPARATOR = b'	'               # tab
 
+SKIP_SYSTEM_INPUTS = False
+
 
 def dir_content_is_modified_since(fname, mtime, chash):
     if os.path.getmtime(fname) != mtime: # robust to NFS time skews
@@ -332,9 +334,8 @@ def update_cache(exec_state,
     wr_list = set()    # written file names
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
-
-            if re.match(pattern=SYSTEM_FILE_RE,
-                        string=bytes.decode(fname)):
+            if SKIP_SYSTEM_INPUTS and re.match(pattern=SYSTEM_FILE_RE,
+                                               string=bytes.decode(fname)):
                 continue        # skip system files for now
 
             if syscall in ['stat', 'statfs']:
