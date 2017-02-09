@@ -278,7 +278,7 @@ def store_outputs(wr_list, inputs_dir_path):
             # copy artifact to compressed storage
             hexdigest = hashlib.new(HASH_NAME,
                                     open(wr_file, 'rb').read()).hexdigest()
-            artifact_path = os.path.join(ARTIFACT_DIR, hexdigest + '.gz')
+            artifact_path = os.path.join(ARTIFACT_DIRC, hexdigest + '.gz')
             with open(wr_file, 'rb') as src_file:
                 with gzip.open(artifact_path, 'wb') as dst_file:
                     shutil.copyfileobj(src_file, dst_file)
@@ -581,7 +581,10 @@ def memoized_run(args,
                     else:
                         pass    # output file already exists, nothing needed
                 else:
-                    print("Try fetching from cache:", fname, mtime, chash)
+                    print("Try fetching from cache:", fname, mtime)
+                    artifact_path = os.path.join(ARTIFACT_DIR,
+                                                 binascii.hexlify(chash).decode('ascii') + '.gz')
+                    pp(artifact_path)
                     # TODO set cache_fetch_ok depending on success
 
         if cache_fetch_ok:
