@@ -292,7 +292,11 @@ def store_outputs(wr_list, inputs_dir_path):
 
 def dir_filenames_chash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
-    sub_fnames = os.listdir(dname)
+    sub_fnames = sorted(os.listdir(dname))
+    if dname == b'.':
+        print(dname, "has contents")
+        pp(sub_fnames)
+        print()
 
     # hash number of files in dir named dname
     chash.update(str(len(sub_fnames)).encode(ENCODING))
