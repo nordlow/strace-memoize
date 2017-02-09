@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO activate checking of `access` inputs
+
 # TODO save and load
 # - non-zero exist codes in calls to sys.exit()
 # - stdout
@@ -58,7 +60,8 @@ from pprint import pprint as pp # convenient shorthand
 # show results
 OPT_VERBOSE = False             # False, True, 'raw'
 
-SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs', 'access']
+SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs'# , 'access'
+]
 SYS_CALLS_AT = ['openat']       # Linux
 
 # content hashing algorithm
@@ -354,14 +357,7 @@ def update_cache(exec_state,
                     else:
                         rw_list[fname] = os.path.getmtime(fname)
             elif syscall in ['access']:
-                if fname not in rw_list:
-                    if os.path.isdir(fname):
-                        dir_chash = hashlib.new(HASH_NAME)
-                        dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
-                        rw_list[fname] = (os.path.getmtime(fname),
-                                          dir_chash.digest())
-                    else:
-                        rw_list[fname] = os.path.getmtime(fname)
+                pass
             elif syscall == 'open_dir_rdonly':
                 dir_chash = hashlib.new(HASH_NAME)
                 dir_filenames_chash(fname, dir_chash)
@@ -393,6 +389,7 @@ def update_cache(exec_state,
             dir_filenames_chash(dname=rw_file,
                                 chash=inputs_chash)
         else:
+            pp((rw_file, rw_status))
             chash_update_tree(inputs_chash, rw_status[1]) # only content hash here
 
     inputs_dir_path = os.path.join(cache_dir_path,
