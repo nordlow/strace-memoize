@@ -58,7 +58,7 @@ from pprint import pprint as pp # convenient shorthand
 # from dbgio import dln
 
 # show results
-OPT_VERBOSE = False             # False, True, 'raw'
+OPT_VERBOSE = True # False, True, 'raw'
 
 SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs'# , 'access'
 ]
@@ -600,10 +600,15 @@ def memoized_run(args,
     cache_dir_path = cache_dir(exec_hexdigest=exec_chash.hexdigest())
     cached_outputs_path = try_load_outputs_path_from_cache(cache_dir_path=cache_dir_path)
     if cached_outputs_path:
-        print('Trying to load outputs from cache')
+        if OPT_VERBOSE:
+            print('memoized: Trying to copy outputs from cache...')
         if try_restore_outputs_from_cache(cached_outputs_path=cached_outputs_path):
-            print("Cached")
+            if OPT_VERBOSE:
+                print('memoized: Cache fetch completed')
             sys.exit(0)         # TODO handle non-zero previous return code
+        else:
+            if OPT_VERBOSE:
+                print('memoized: Cache fetch failed')
 
     indent = 0
 
@@ -628,7 +633,7 @@ def memoized_run(args,
                      exec_chash=exec_chash,
                      fnames_all=fnames_all)
 
-        if OPT_VERBOSE:
+        if OPT_VERBOSE == 'full':
 
             print("\n============================= TRACE RESULTS ===================================\n")
 
