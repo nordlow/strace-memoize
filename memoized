@@ -68,7 +68,8 @@ INDENT_STEP = 2                 # number of spaces per indentation level
 
 include_system_deps = True
 
-SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc|tmp)')
+SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc)')
+SKIP_FILE_RE = re.compile(r'/+tmp|/+dev/urandom')
 
 ENCODING = 'utf-8'              # default text encoding
 
@@ -134,6 +135,8 @@ def _print_syscall_fnames(syscall_s, fnames, indent):
 
         for fname in filter(lambda fname: (include_system_deps or
                                            not (re.match(pattern=SYSTEM_FILE_RE,
+                                                         string=bytes.decode(fname)) and
+                                                re.match(pattern=SKIP_FILE_RE,
                                                          string=bytes.decode(fname)))),
                             sorted(fnames, reverse=True)):
 
@@ -334,9 +337,15 @@ def update_cache(exec_state,
     wr_list = set()    # written file names
     for (syscall, fnames) in fnames_all.items():
         for fname in fnames:
+            # skip temporary files by default
+            if re.match(pattern=SKIP_FILE_RE,
+                        string=bytes.decode(fname)):
+                continue
+
+            # optionally skip system inputs
             if SKIP_SYSTEM_INPUTS and re.match(pattern=SYSTEM_FILE_RE,
                                                string=bytes.decode(fname)):
-                continue        # skip system files for now
+                continue
 
             if syscall in ['stat', 'statfs']:
                 if fname not in rw_list:
