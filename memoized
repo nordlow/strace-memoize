@@ -293,10 +293,18 @@ def store_outputs(wr_list, inputs_dir_path):
 def dir_filenames_hash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = sorted(os.listdir(dname))
-    if dname == b'.':
-        print(dname, "has contents")
-        pp(sub_fnames)
-        print()
+    # if dname == b'.':
+    #     print(dname, "has contents")
+    #     pp(sub_fnames)
+    #     print()
+
+    if os.access(dname, os.W_OK):
+        try:
+            output = subprocess.check_output(args=('git', 'status', '-z', '--ignored', dname.decode(ENCODING)),
+                                             shell=False)
+            print(output.split(b'\x00'))
+        except CalledProcessError:
+            pass
 
     # hash number of files in dir named dname
     chash.update(str(len(sub_fnames)).encode(ENCODING))
