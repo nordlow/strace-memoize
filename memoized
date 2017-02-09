@@ -395,6 +395,15 @@ def update_cache(exec_state,
     return 'uncached'
 
 
+def normalize_cwdrelpath(path):
+    """Convert absolute paths under cwd to paths relative to cwd."""
+    abs_cwd = os.path.abspath(os.getcwd()).encode('ascii') # TODO correct encoding?
+    if os.path.isabs(path) and path.startswith(abs_cwd):
+        return os.path.relpath(path, abs_cwd)
+    else:
+        return path
+
+
 def process_strace_output_file(out_file):
 
     first_execve_state = None
@@ -431,6 +440,8 @@ def process_strace_output_file(out_file):
                 if (fname.startswith(b'//usr') or
                     fname.startswith(b'//lib')):
                     fname = fname[1:] # skip first slash
+
+                fname = normalize_cwdrelpath(fname)
 
                 # in decreasing probability
                 if syscall == b'execve':
@@ -528,14 +539,12 @@ def memoized_run(args,
                     if file_content_is_modified_since(fname, mtime, chash):
                         cache_fetch_ok = False
                     else:
-                        pp('reused')
                         cache_fetch_ok = True
                 else:
                     print("Try fetching from cache:", fname, mtime, chash)
                     cache_fetch_ok = False
 
         if cache_fetch_ok:
-            pp("x")
             sys.exit(0)         # TODO handle non-zero previous return code
 
     indent = 0
