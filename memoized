@@ -564,7 +564,7 @@ def memoized_run(args,
     cache_dir_path = cache_dir(exec_hexdigest=exec_chash.hexdigest())
     cached_outputs_path = try_load_outputs_path_from_cache(cache_dir_path=cache_dir_path)
     if cached_outputs_path:
-        cache_fetch_ok = False
+        cache_fetch_ok = True
         with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
             cached_outputs_list = pickle.load(cached_outputs_pickle_file)
             for cached_output in cached_outputs_list:
@@ -576,10 +576,10 @@ def memoized_run(args,
                     if file_content_is_modified_since(fname, mtime, chash):
                         cache_fetch_ok = False
                     else:
-                        cache_fetch_ok = True
+                        pass    # output file already exists, nothing needed
                 else:
                     print("Try fetching from cache:", fname, mtime, chash)
-                    cache_fetch_ok = False
+                    # TODO set cache_fetch_ok depending on success
 
         if cache_fetch_ok:
             sys.exit(0)         # TODO handle non-zero previous return code
