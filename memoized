@@ -541,6 +541,37 @@ def which(program):
     return None
 
 
+def try_restore_outputs_from_cache(cached_outputs_path):
+    """Try copying output files listed in CACHED_OUTPUTS_PATH from artifact cache."""
+
+    cache_fetch_ok = True
+    with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
+        cached_outputs_list = pickle.load(cached_outputs_pickle_file)
+        for cached_output in cached_outputs_list:
+            fname = cached_output[0]
+            mtime = cached_output[1]
+            chash = cached_output[2]
+
+            if os.path.exists(fname):
+                if file_content_is_modified_since(fname, mtime, chash):
+                    cache_fetch_ok = False
+                    break
+                else:
+                    pass    # output file already exists, nothing needed
+            else:
+                artifact_path = os.path.join(ARTIFACT_DIR,
+                                             binascii.hexlify(chash).decode('ascii') + '.gz')
+                try:
+                    with gzip.open(artifact_path, 'rb') as artifact_file:
+                        with open(fname, 'wb') as output_file:
+                            shutil.copyfileobj(artifact_file, output_file)
+                except:
+                    print("Failed to copy artifact {} to {}".format(artifact_path, fname))
+                    cache_fetch_ok = False
+                    break
+    return cache_fetch_ok
+
+
 def memoized_run(args,
                  trace_childs=True,
                  env=None):
@@ -559,33 +590,7 @@ def memoized_run(args,
     cache_dir_path = cache_dir(exec_hexdigest=exec_chash.hexdigest())
     cached_outputs_path = try_load_outputs_path_from_cache(cache_dir_path=cache_dir_path)
     if cached_outputs_path:
-        cache_fetch_ok = True
-        with open(cached_outputs_path, 'rb') as cached_outputs_pickle_file:
-            cached_outputs_list = pickle.load(cached_outputs_pickle_file)
-            for cached_output in cached_outputs_list:
-                fname = cached_output[0]
-                mtime = cached_output[1]
-                chash = cached_output[2]
-
-                if os.path.exists(fname):
-                    if file_content_is_modified_since(fname, mtime, chash):
-                        cache_fetch_ok = False
-                        break
-                    else:
-                        pass    # output file already exists, nothing needed
-                else:
-                    artifact_path = os.path.join(ARTIFACT_DIR,
-                                                 binascii.hexlify(chash).decode('ascii') + '.gz')
-                    try:
-                        with gzip.open(artifact_path, 'rb') as artifact_file:
-                            with open(fname, 'wb') as output_file:
-                                shutil.copyfileobj(artifact_file, output_file)
-                    except:
-                        print("Failed to copy artifact {} to {}".format(artifact_path, fname))
-                        cache_fetch_ok = False
-                        break
-
-        if cache_fetch_ok:
+        if try_restore_outputs_from_cache(cached_outputs_path=cached_outputs_path):
             sys.exit(0)         # TODO handle non-zero previous return code
 
     indent = 0
