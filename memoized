@@ -345,6 +345,12 @@ def update_cache(exec_state,
                                           dir_chash.digest())
                     else:
                         rw_list[fname] = os.path.getmtime(fname)
+            elif syscall == 'open_dir_rdonly':
+                f
+                dir_chash = hashlib.new(HASH_NAME)
+                dir_filenames_chash(fname, dir_chash)
+                rw_list[fname] = (os.path.getmtime(fname),
+                                  dir_chash.digest())
             elif syscall in ['open_rdonly',
                              'open_wronly',
                              'open_rdwr']:
@@ -411,13 +417,14 @@ def process_strace_output_file(out_file):
 
     # hash from system call name to call instances set
     fnames_all = {}
-    fnames_all['open_rdonly'] = set()
-    fnames_all['open_wronly'] = set()
-    fnames_all['open_rdwr']   = set()
-    fnames_all['stat']        = set()
-    fnames_all['statfs']      = set()
-    fnames_all['openat']      = set()
-    fnames_all['access']      = set()
+    fnames_all['open_rdonly']     = set()
+    fnames_all['open_dir_rdonly'] = set()
+    fnames_all['open_wronly']     = set()
+    fnames_all['open_rdwr']       = set()
+    fnames_all['stat']            = set()
+    fnames_all['statfs']          = set()
+    fnames_all['openat']          = set()
+    fnames_all['access']          = set()
 
     out_file.seek(0)              # reset it
     for out_line in out_file:
@@ -467,7 +474,11 @@ def process_strace_output_file(out_file):
                     fnames_all['openat'].add(fname)
                     # print(fname, out_rest)
                 elif syscall == b'open':
-                    if out_rest.startswith(b'O_RDONLY'): # read-only
+                    # TODO split out_rest at ending ')' and pattern match against all bitfields O_....
+                    if (out_rest.startswith(b'O_RDONLY|O_DIRECTORY') or
+                        out_rest.startswith(b'O_RDONLY|O_NONBLOCK|O_DIRECTORY')): # read directory contents
+                        fnames_all['open_dir_rdonly'].add(fname)
+                    elif out_rest.startswith(b'O_RDONLY'): # read-only
                         fnames_all['open_rdonly'].add(fname)
                     elif out_rest.startswith(b'O_WRONLY'):
                         # write-only create into new file
