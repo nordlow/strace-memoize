@@ -581,7 +581,6 @@ def memoized_run(args,
                     else:
                         pass    # output file already exists, nothing needed
                 else:
-                    print("Try fetching from cache:", fname, mtime)
                     artifact_path = os.path.join(ARTIFACT_DIR,
                                                  binascii.hexlify(chash).decode('ascii') + '.gz')
                     pp(artifact_path)
