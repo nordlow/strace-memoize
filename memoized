@@ -226,7 +226,6 @@ def store_file_list_pickle(base_path, file_list):
 
 
 def store_inputs(input_list_sorted_by_fname,
-                 wr_list,
                  inputs_dir_path):
 
     inputs_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
@@ -237,10 +236,6 @@ def store_inputs(input_list_sorted_by_fname,
     # human readable
     with open(inputs_path + '.txt', 'wb') as inputs_file:
         for input_fname, input_status in input_list_sorted_by_fname:
-
-            if input_fname in wr_list:
-                continue        # skip output files
-
             if input_status[1] is None:
                 hash_hex = b'_'
             else:
@@ -270,26 +265,29 @@ def store_outputs(wr_list, inputs_dir_path):
 
     # human readable
     with open(wr_list_path + '.txt', 'wb') as wr_list_file:
-        for wr_file in wr_list:
+        for wr_fname in wr_list:
 
             # create artifact storage directory
             os.makedirs(name=ARTIFACT_DIR, exist_ok=True)
 
             # copy artifact to compressed storage
             hexdigest = hashlib.new(HASH_NAME,
-                                    open(wr_file, 'rb').read()).hexdigest()
-            artifact_path = os.path.join(ARTIFACT_DIRC, hexdigest + '.gz')
-            with open(wr_file, 'rb') as src_file:
-                with gzip.open(artifact_path, 'wb') as dst_file:
-                    shutil.copyfileobj(src_file, dst_file)
+                                    open(wr_fname, 'rb').read()).hexdigest()
 
-            # and store hexdigest modification time and path
-            wr_list_file.write(hexdigest.encode('ascii') +
-                               SEPARATOR +
-                               str(os.path.getmtime(wr_file)).encode('ascii') +
-                               SEPARATOR +
-                               wr_file +
-                               b'\n')
+            artifact_path = os.path.join(ARTIFACT_DIR, hexdigest + '.gz')
+            if not os.path.exists(artifact_path):
+
+                with open(wr_fname, 'rb') as wr_file:
+                    with gzip.open(artifact_path, 'wb') as artifact_file:
+                        shutil.copyfileobj(wr_file, artifact_file)
+
+                # and store hexdigest modification time and path
+                wr_list_file.write(hexdigest.encode('ascii') +
+                                   SEPARATOR +
+                                   str(os.path.getmtime(wr_fname)).encode('ascii') +
+                                   SEPARATOR +
+                                   wr_fname +
+                                   b'\n')
 
 
 def dir_filenames_chash(dname, chash):
@@ -392,10 +390,6 @@ def update_cache(exec_state,
                         rw_list.items())
     input_list_sorted_by_fname = sorted(input_list) # TODO sort by first element only
     for rw_file, rw_status in input_list_sorted_by_fname:
-
-        if rw_file in wr_list:
-            continue            # exclude written files, because they are saved
-
         if os.path.isdir(rw_file):
             dir_filenames_chash(dname=rw_file,
                                 chash=inputs_chash)
@@ -416,7 +410,6 @@ def update_cache(exec_state,
          'w').write(repr(exec_state))
 
     store_inputs(input_list_sorted_by_fname=input_list_sorted_by_fname,
-                 wr_list=wr_list,
                  inputs_dir_path=inputs_dir_path)
 
     store_outputs(wr_list=wr_list,
@@ -574,17 +567,23 @@ def memoized_run(args,
                 mtime = cached_output[1]
                 chash = cached_output[2]
 
-                pp(fname)
                 if os.path.exists(fname):
                     if file_content_is_modified_since(fname, mtime, chash):
                         cache_fetch_ok = False
+                        break
                     else:
                         pass    # output file already exists, nothing needed
                 else:
                     artifact_path = os.path.join(ARTIFACT_DIR,
                                                  binascii.hexlify(chash).decode('ascii') + '.gz')
-                    pp(artifact_path)
-                    # TODO set cache_fetch_ok depending on success
+                    try:
+                        with gzip.open(artifact_path, 'rb') as artifact_file:
+                            with open(fname, 'wb') as output_file:
+                                shutil.copyfileobj(artifact_file, output_file)
+                    except:
+                        print("Failed to copy artifact {} to {}".format(artifact_path, fname))
+                        cache_fetch_ok = False
+                        break
 
         if cache_fetch_ok:
             sys.exit(0)         # TODO handle non-zero previous return code
