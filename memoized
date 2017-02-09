@@ -241,8 +241,12 @@ def store_inputs(rw_list_sorted_by_fname,
             if input_fname in wr_list:
                 continue        # skip output files
 
-            pp(input_status)
-            inputs_file.write(binascii.hexlify(input_status[1]) +
+            if input_status[1] is None:
+                hash_hex = b'_'
+            else:
+                hash_hex = binascii.hexlify(input_status[1])
+
+            inputs_file.write(hash_hex +
                               SEPARATOR +
                               str(input_status[0]).encode('ascii') +
                               SEPARATOR +
