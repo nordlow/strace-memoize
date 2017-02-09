@@ -93,9 +93,9 @@ SKIP_SYSTEM_INPUTS = False
 
 def dir_content_is_modified_since(fname, mtime, chash):
     if os.path.getmtime(fname) != mtime: # robust to NFS time skews
-        dir_chash = hashlib.new(HASH_NAME)
-        dir_filenames_chash(fname, dir_chash) # TODO needed only for stat?
-        return dir_chash.digest() != chash
+        dir_hash = hashlib.new(HASH_NAME)
+        dir_filenames_hash(fname, dir_hash) # TODO needed only for stat?
+        return dir_hash.digest() != chash
     else:
         return False
 
@@ -290,7 +290,7 @@ def store_outputs(wr_list, inputs_dir_path):
                                    b'\n')
 
 
-def dir_filenames_chash(dname, chash):
+def dir_filenames_hash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = sorted(os.listdir(dname))
     if dname == b'.':
@@ -373,18 +373,18 @@ def update_cache(exec_state,
                             rw_list[fname] = (os.path.getmtime(fname),
                                               None)
             elif syscall == 'open_dir_rdonly':
-                dir_chash = hashlib.new(HASH_NAME)
-                dir_filenames_chash(fname, dir_chash)
+                dir_hash = hashlib.new(HASH_NAME)
+                dir_filenames_hash(fname, dir_hash)
                 rw_list[fname] = (os.path.getmtime(fname),
-                                  dir_chash.digest())
+                                  dir_hash.digest())
             elif syscall in ['open_rdonly',
                              'open_wronly',
                              'open_rdwr']:
                 if os.path.isdir(fname):
-                    dir_chash = hashlib.new(HASH_NAME)
-                    dir_filenames_chash(fname, dir_chash)
+                    dir_hash = hashlib.new(HASH_NAME)
+                    dir_filenames_hash(fname, dir_hash)
                     rw_list[fname] = (os.path.getmtime(fname),
-                                      dir_chash.digest())
+                                      dir_hash.digest())
                 else:
                     rw_list[fname] = (os.path.getmtime(fname),
                                       hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest())
@@ -401,7 +401,7 @@ def update_cache(exec_state,
     input_list_sorted_by_fname = sorted(input_list) # TODO sort by first element only
     for rw_file, rw_status in input_list_sorted_by_fname:
         if os.path.isdir(rw_file):
-            dir_filenames_chash(dname=rw_file,
+            dir_filenames_hash(dname=rw_file,
                                 chash=inputs_chash)
         else:
             if rw_status[1] != None:
