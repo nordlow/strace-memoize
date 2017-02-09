@@ -4,6 +4,8 @@
 # - non-zero exist codes in calls to sys.exit()
 # - stdout
 
+# TODO how to handle stat mtime on input dirs where output files are written?
+
 # TODO Update modification times in cache if they are same as written file
 
 # TODO Add `env` argument to `memoized_run` and use it instead of `os.environ._data` if set
@@ -335,7 +337,13 @@ def update_cache(exec_state,
                         string=bytes.decode(fname)):
                 continue        # skip system files for now
 
-            if syscall in ['stat', 'statfs', 'access']:
+            if syscall in ['stat', 'statfs']:
+                if fname not in rw_list:
+                    if os.path.isdir(fname):
+                        pass    # do nothing for now as outputs may be written here
+                    else:
+                        rw_list[fname] = os.path.getmtime(fname)
+            elif syscall in ['access']:
                 if fname not in rw_list:
                     if os.path.isdir(fname):
                         dir_chash = hashlib.new(HASH_NAME)
@@ -345,7 +353,6 @@ def update_cache(exec_state,
                     else:
                         rw_list[fname] = os.path.getmtime(fname)
             elif syscall == 'open_dir_rdonly':
-                f
                 dir_chash = hashlib.new(HASH_NAME)
                 dir_filenames_chash(fname, dir_chash)
                 rw_list[fname] = (os.path.getmtime(fname),
@@ -473,6 +480,7 @@ def process_strace_output_file(out_file):
                     fnames_all['openat'].add(fname)
                     # print(fname, out_rest)
                 elif syscall == b'open':
+                    pp((syscall, fname))
                     # TODO split out_rest at ending ')' and pattern match against all bitfields O_....
                     if (out_rest.startswith(b'O_RDONLY|O_DIRECTORY') or
                         out_rest.startswith(b'O_RDONLY|O_NONBLOCK|O_DIRECTORY')): # read directory contents
