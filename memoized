@@ -319,7 +319,12 @@ def try_load_outputs_path_from_cache(cache_dir_path):
                 input_fname = rw_file[0]
                 input_mtime = rw_file[1][0]
                 input_chash = rw_file[1][1]
-                if file_content_is_modified_since(input_fname, input_mtime, input_chash):
+                if file_content_is_modified_since(input_fname,
+                                                  input_mtime,
+                                                  input_chash):
+                    print("Cannot load from cache because input",
+                          input_fname.decode(ENCODING),
+                          " as changed")
                     dirty = True
                     break
             if not dirty:
@@ -590,7 +595,9 @@ def memoized_run(args,
     cache_dir_path = cache_dir(exec_hexdigest=exec_chash.hexdigest())
     cached_outputs_path = try_load_outputs_path_from_cache(cache_dir_path=cache_dir_path)
     if cached_outputs_path:
+        print('Trying to load outputs from cache')
         if try_restore_outputs_from_cache(cached_outputs_path=cached_outputs_path):
+            print("Cached")
             sys.exit(0)         # TODO handle non-zero previous return code
 
     indent = 0
@@ -606,6 +613,7 @@ def memoized_run(args,
         sys_calls_flags = ['-e', 'trace=' +
                            ','.join(SYS_CALLS + SYS_CALLS_AT)]
         strace_cmd = ['strace'] + strace_std_flags + outfile_flags + sys_calls_flags + args
+        print('strace_cmd:', ' '.join(strace_cmd))
 
         ret = subprocess.run(args=strace_cmd, shell=False)
 
