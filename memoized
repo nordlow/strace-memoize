@@ -298,11 +298,16 @@ def dir_filenames_hash(dname, chash):
     #     pp(sub_fnames)
     #     print()
 
+    # TODO functionize to git_status(dir) which return a list
     if os.access(dname, os.W_OK):
         try:
-            output = subprocess.check_output(args=('git', 'status', '-z', '--ignored', dname.decode(ENCODING)),
+            args = ('git', 'status', '-z', '--ignored',
+                    dname.decode(ENCODING))
+            print("dname:", dname, "args:", args)
+            output = subprocess.check_output(args=args,
                                              shell=False)
-            print(output.split(b'\x00'))
+            for file_status in output.split(b'\x00'):
+                print(file_status)
         except CalledProcessError:
             pass
 
