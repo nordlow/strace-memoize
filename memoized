@@ -225,18 +225,18 @@ def store_file_list_pickle(base_path, file_list):
         pickle.dump(file_list, out_file, pickle.DEFAULT_PROTOCOL)
 
 
-def store_inputs(rw_list_sorted_by_fname,
+def store_inputs(input_list_sorted_by_fname,
                  wr_list,
                  inputs_dir_path):
 
     inputs_path = os.path.join(inputs_dir_path, INPUTS_FILENAME)
 
     store_file_list_pickle(base_path=inputs_path,
-                           file_list=rw_list_sorted_by_fname)
+                           file_list=input_list_sorted_by_fname)
 
     # human readable
     with open(inputs_path + '.txt', 'wb') as inputs_file:
-        for input_fname, input_status in rw_list_sorted_by_fname:
+        for input_fname, input_status in input_list_sorted_by_fname:
 
             if input_fname in wr_list:
                 continue        # skip output files
@@ -388,8 +388,10 @@ def update_cache(exec_state,
             else:
                 raise Exception('TODO handle syscall ' + syscall)
 
-    rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
-    for rw_file, rw_status in rw_list_sorted_by_fname:
+    input_list = filter(lambda rw_entry: rw_entry[0] not in wr_list,
+                        rw_list.items())
+    input_list_sorted_by_fname = sorted(input_list) # TODO sort by first element only
+    for rw_file, rw_status in input_list_sorted_by_fname:
 
         if rw_file in wr_list:
             continue            # exclude written files, because they are saved
@@ -413,7 +415,7 @@ def update_cache(exec_state,
                       'exec_state.python-repr'),
          'w').write(repr(exec_state))
 
-    store_inputs(rw_list_sorted_by_fname=rw_list_sorted_by_fname,
+    store_inputs(input_list_sorted_by_fname=input_list_sorted_by_fname,
                  wr_list=wr_list,
                  inputs_dir_path=inputs_dir_path)
 
@@ -572,6 +574,7 @@ def memoized_run(args,
                 mtime = cached_output[1]
                 chash = cached_output[2]
 
+                pp(fname)
                 if os.path.exists(fname):
                     if file_content_is_modified_since(fname, mtime, chash):
                         cache_fetch_ok = False
