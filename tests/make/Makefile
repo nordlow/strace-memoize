@@ -1,6 +1,6 @@
 LD=ld				# either ld or ld.gold
 CC=gcc
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -Wno-unused-parameter
 
 main: Makefile main.o
 	$(LD) main.o -o $@
