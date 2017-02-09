@@ -434,75 +434,78 @@ def process_strace_output_file(out_file):
 
     out_file.seek(0)              # reset it
     for out_line in out_file:
-        if b'ENOENT' not in out_line: # skip failing calls
-            # print(out_line)
 
-            pid_, out_rest = out_line.split(None, 1)
+        if b'ENOENT' in out_line: # skip failing calls
+            continue
 
-            pid = int(pid_) # decode PID integer
-            # print(pid)
+        pid_, out_rest = out_line.split(None, 1)
 
-            try:
-                syscall, out_rest = out_rest.split(b'(', 1)
-                syscall_s = bytes.decode(syscall)
-                # print(syscall_s)
+        pid = int(pid_) # decode PID integer
+        # print(pid)
 
-                fname, out_rest = out_rest.split(b', ', 1)
-                fname = os.path.normpath(fname[1:-1])
+        try:
+            syscall, out_rest = out_rest.split(b'(', 1)
+            syscall_s = bytes.decode(syscall)
+            # print(syscall_s)
 
-                if (fname.startswith(b'//usr') or
-                    fname.startswith(b'//lib')):
-                    fname = fname[1:] # skip first slash for now. TODO correct?
+            fname, out_rest = out_rest.split(b', ', 1)
+            fname = os.path.normpath(fname[1:-1])
 
-                fname = normalize_cwdrelpath(fname)
+            if (fname.startswith(b'//usr') or
+                fname.startswith(b'//lib')):
+                fname = fname[1:] # skip first slash for now. TODO correct?
 
-                # in decreasing probability
-                if syscall == b'execve':
-                    # get args
-                    _args, out_rest = out_rest.split(b'], [', 1)
-                    argv = eval(_args[1:]) # tuple of strings
+            fname = normalize_cwdrelpath(fname)
 
-                    # get environment
-                    _env, out_rest = out_rest.split(b']) = ', 1)
-                    env = eval(_env) # tuple of strings containing ENV_VAR=VALE
+            # if syscall != b'execve':
+            #     pp((syscall, fname, out_rest))
 
-                    # store and fingerprint
-                    exec_state = (syscall, fname, argv, env)
-                    if first_execve_state is None:
-                        first_execve_state = exec_state
-                        trace.append(exec_state)
+            # in decreasing probability
+            if syscall == b'execve':
+                # get args
+                _args, out_rest = out_rest.split(b'], [', 1)
+                argv = eval(_args[1:]) # tuple of strings
 
-                elif syscall == b'stat':
-                    fnames_all['stat'].add(fname)
-                elif syscall == b'statfs':
-                    fnames_all['statfs'].add(fname)
-                elif syscall == b'openat':
-                    fnames_all['openat'].add(fname)
-                    # print(fname, out_rest)
-                elif syscall == b'open':
-                    pp((syscall, fname))
-                    # TODO split out_rest at ending ')' and pattern match against all bitfields O_....
-                    if (out_rest.startswith(b'O_RDONLY|O_DIRECTORY') or
-                        out_rest.startswith(b'O_RDONLY|O_NONBLOCK|O_DIRECTORY')): # read directory contents
-                        fnames_all['open_dir_rdonly'].add(fname)
-                    elif out_rest.startswith(b'O_RDONLY'): # read-only
-                        fnames_all['open_rdonly'].add(fname)
-                    elif out_rest.startswith(b'O_WRONLY'):
-                        # write-only create into new file
-                        fnames_all['open_wronly'].add(fname)
-                    elif out_rest.startswith(b'O_RDWR|O_CREAT|O_TRUNC'): # write-only
-                        fnames_all['open_wronly'].add(fname)
-                    elif out_rest.startswith(b'O_RDWR|O_CREAT'): # read-write
-                        fnames_all['open_rdwr'].add(fname)
-                    else:
-                        raise Exception('unknown out_rest' + str(out_rest))
-                elif syscall == b'access':
-                    fnames_all['access'].add(fname)
+                # get environment
+                _env, out_rest = out_rest.split(b']) = ', 1)
+                env = eval(_env) # tuple of strings containing ENV_VAR=VALE
+
+                # store and fingerprint
+                exec_state = (syscall, fname, argv, env)
+                if first_execve_state is None:
+                    first_execve_state = exec_state
+                    trace.append(exec_state)
+
+            elif syscall == b'stat':
+                fnames_all['stat'].add(fname)
+            elif syscall == b'statfs':
+                fnames_all['statfs'].add(fname)
+            elif syscall == b'openat':
+                fnames_all['openat'].add(fname)
+                # print(fname, out_rest)
+            elif syscall == b'open':
+                # TODO split out_rest at ending ')' and pattern match against all bitfields O_....
+                if (out_rest.startswith(b'O_RDONLY|O_DIRECTORY') or
+                    out_rest.startswith(b'O_RDONLY|O_NONBLOCK|O_DIRECTORY')): # read directory contents
+                    fnames_all['open_dir_rdonly'].add(fname)
+                elif out_rest.startswith(b'O_RDONLY'): # read-only
+                    fnames_all['open_rdonly'].add(fname)
+                elif out_rest.startswith(b'O_WRONLY'):
+                    # write-only create into new file
+                    fnames_all['open_wronly'].add(fname)
+                elif out_rest.startswith(b'O_RDWR|O_CREAT|O_TRUNC'): # write-only
+                    fnames_all['open_wronly'].add(fname)
+                elif out_rest.startswith(b'O_RDWR|O_CREAT'): # read-write
+                    fnames_all['open_rdwr'].add(fname)
                 else:
-                    print('Handle system call ' + syscall_s)
+                    raise Exception('unknown out_rest' + str(out_rest))
+            elif syscall == b'access':
+                fnames_all['access'].add(fname)
+            else:
+                print('Handle system call ' + syscall_s)
 
-            except ValueError:
-                pass
+        except ValueError:
+            pass
 
     return (first_execve_state, trace, fnames_all)
 
