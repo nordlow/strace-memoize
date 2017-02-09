@@ -329,7 +329,6 @@ def update_cache(exec_state,
     rw_list = {}       # read or/and written file names => mtime and optional chash
     wr_list = set()    # written file names
     for (syscall, fnames) in fnames_all.items():
-        # pp((syscall, fnames))
         for fname in fnames:
 
             if re.match(pattern=SYSTEM_FILE_RE,
@@ -606,5 +605,4 @@ if __name__ == '__main__':
             OPT_VERBOSE = True
 
     completedProcess, trace = memoized_run(args)
-    # pp(trace)
     sys.exit(completedProcess.returncode)
