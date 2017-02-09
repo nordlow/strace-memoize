@@ -355,9 +355,9 @@ def update_cache(exec_state,
                     if os.path.isdir(fname):
                         pass    # do nothing for now as outputs may be written here
                     else:
-                        rw_list[fname] = os.path.getmtime(fname)
-            elif syscall in ['access']:
-                pass
+                        if re.match(pattern=SYSTEM_FILE_RE,
+                                    string=bytes.decode(fname)):
+                            rw_list[fname] = os.path.getmtime(fname)
             elif syscall == 'open_dir_rdonly':
                 dir_chash = hashlib.new(HASH_NAME)
                 dir_filenames_chash(fname, dir_chash)
@@ -366,7 +366,6 @@ def update_cache(exec_state,
             elif syscall in ['open_rdonly',
                              'open_wronly',
                              'open_rdwr']:
-
                 if os.path.isdir(fname):
                     dir_chash = hashlib.new(HASH_NAME)
                     dir_filenames_chash(fname, dir_chash)
@@ -378,6 +377,10 @@ def update_cache(exec_state,
                     if syscall in ['open_wronly',
                                    'open_rdwr']:
                         wr_list.add(fname)
+            elif syscall in ['access']:
+                pass
+            else:
+                raise Exception('TODO handle syscall ' + syscall)
 
     rw_list_sorted_by_fname = sorted(rw_list.items()) # TODO sort by first element only
     for rw_file, rw_status in rw_list_sorted_by_fname:
