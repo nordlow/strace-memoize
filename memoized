@@ -574,6 +574,8 @@ def try_restore_outputs_from_cache(cached_outputs_path):
                 try:
                     with gzip.open(artifact_path, 'rb') as artifact_file:
                         with open(fname, 'wb') as output_file:
+                            if OPT_VERBOSE:
+                                print('memoized: Fetched {} from cache'.format(fname.decode(ENCODING)))
                             shutil.copyfileobj(artifact_file, output_file)
                 except:
                     print("Failed to copy artifact {} to {}".format(artifact_path, fname))
@@ -600,11 +602,7 @@ def memoized_run(args,
     cache_dir_path = cache_dir(exec_hexdigest=exec_chash.hexdigest())
     cached_outputs_path = try_load_outputs_path_from_cache(cache_dir_path=cache_dir_path)
     if cached_outputs_path:
-        if OPT_VERBOSE:
-            print('memoized: Trying to copy outputs from cache...')
         if try_restore_outputs_from_cache(cached_outputs_path=cached_outputs_path):
-            if OPT_VERBOSE:
-                print('memoized: Cache fetch completed')
             sys.exit(0)         # TODO handle non-zero previous return code
         else:
             if OPT_VERBOSE:
