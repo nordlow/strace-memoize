@@ -293,10 +293,6 @@ def store_outputs(wr_list, inputs_dir_path):
 def dir_filenames_hash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = sorted(os.listdir(dname))
-    # if dname == b'.':
-    #     print(dname, "has contents")
-    #     pp(sub_fnames)
-    #     print()
 
     # TODO functionize to git_status(dir) which return a list
     if os.access(dname, os.W_OK): # if directory is writable
