@@ -350,10 +350,11 @@ def try_load_outputs_path_from_cache(cache_dir_path):
                 if file_content_is_modified_since(input_fname,
                                                   input_mtime,
                                                   input_chash):
-                    print("Cannot load from cache because input state of",
-                          input_fname.decode(ENCODING),
-                          "has changed from",
-                          input_mtime, binascii.hexlify(input_chash))
+                    if False:
+                        print("Cannot load from cache because input state of",
+                              input_fname.decode(ENCODING),
+                              "has changed from",
+                              input_mtime, binascii.hexlify(input_chash))
                     dirty = True
                     break
             if not dirty:
