@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# TODO Fix crash when building ~/Work/dmd
+
+# TODO Cache stdout and stderr
+
 # Get current time before call to strace and the modtime for each input after
 # and use to more safely remove written files in opened (potential input)
 # directories. Reuse watchman here to faster discard directories that have are
