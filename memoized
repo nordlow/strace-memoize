@@ -304,11 +304,12 @@ def dir_filenames_hash(dname, chash):
         try:
             args = ('git', 'status', '-z', '--ignored',
                     dname.decode(ENCODING))
-            print("dname:", dname, "args:", args)
+            # print("dname:", dname, "args:", args)
             output = subprocess.check_output(args=args,
                                              shell=False)
             for file_status in output.split(b'\x00'):
-                print(file_status)
+                pass
+                # print(file_status)
         except CalledProcessError:
             pass
 
@@ -429,9 +430,25 @@ def update_cache(exec_state,
     os.makedirs(name=inputs_dir_path,  exist_ok=True)
 
     # write execve call
-    open(os.path.join(cache_dir_path,
-                      'exec_state.python-repr'),
-         'w').write(repr(exec_state))
+    conf_path = os.path.join(cache_dir_path,
+                             'exec_state.conf')
+    with open(conf_path,  'w') as conf_file:
+        for key, value in exec_state:
+            if key == 'env':
+                conf_file.write('[' + key + ']\n')
+                for env_entry in value:
+                    conf_file.write(env_entry[0].decode(ENCODING) + '="' + env_entry[1].decode(ENCODING) + '"\n')
+            else:
+                if isinstance(value, str):
+                    conf_file.write(key + '="' + value + '"\n')
+                elif isinstance(value, bytes):
+                    conf_file.write(key + '="' + value.decode(ENCODING) + '"\n')
+                else:
+                    conf_file.write(key + '="' + str(value) + '"\n')
+
+    # open(os.path.join(cache_dir_path,
+    #                   'exec_state.python-repr'),
+    #      'w').write(repr(exec_state))
 
     store_inputs(input_list_sorted_by_fname=input_list_sorted_by_fname,
                  inputs_dir_path=inputs_dir_path)
