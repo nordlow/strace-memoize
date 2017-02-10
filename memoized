@@ -2,6 +2,9 @@
 
 # TODO activate checking of `access` inputs
 
+# TODO warn about certain output paths?
+# TODO warn when inputs and outputs
+
 # TODO save and load
 # - non-zero exist codes in calls to sys.exit()
 # - stdout
@@ -102,6 +105,7 @@ def dir_content_is_modified_since(fname, mtime, chash):
 
 def regular_file_content_is_modified_since(fname, mtime, chash):
     if os.path.getmtime(fname) != mtime: # robust to NFS time skews
+        pp(fname)
         return hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest() != chash
     else:
         return False
@@ -221,6 +225,9 @@ def cache_makedirs(exec_hexdigest):
 def store_file_list_pickle(base_path, file_list):
     """Store input file list FILE_LIST in a file at BASE_PATH."""
 
+    for e in file_list:
+        pp(e[0])
+        assert(e[0] != b'/dev/pts/9')
     with open(base_path + '.pickle', 'wb') as out_file:
         pickle.dump(file_list, out_file, pickle.DEFAULT_PROTOCOL)
 
@@ -320,8 +327,6 @@ def dir_filenames_hash(dname, chash):
     sub_fnames = sorted(os.listdir(dname))
 
     for status, sub_fname in git_status(dname):
-        pp((status, sub_fname))
-
         if status in [b'!!', b'??']:
             try:
                 sub_fnames.remove(sub_fname)
