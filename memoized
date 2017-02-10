@@ -78,7 +78,7 @@ from pprint import pprint as pp # convenient shorthand
 # show results
 OPT_VERBOSE = True # False, True, 'raw'
 
-SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs'# , 'access'
+SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs', 'chdir'# , 'access'
 ]
 SYS_CALLS_AT = ['openat']       # Linux
 
