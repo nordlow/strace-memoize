@@ -75,7 +75,7 @@ INDENT_STEP = 2                 # number of spaces per indentation level
 include_system_deps = True
 
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc)')
-SKIP_FILE_RE = re.compile(r'/+tmp|/+dev/urandom')
+SKIP_FILE_RE = re.compile(r'/+(tmp|dev/urandom|dev/pts)')
 
 ENCODING = 'utf-8'              # default text encoding
 
@@ -105,7 +105,6 @@ def dir_content_is_modified_since(fname, mtime, chash):
 
 def regular_file_content_is_modified_since(fname, mtime, chash):
     if os.path.getmtime(fname) != mtime: # robust to NFS time skews
-        pp(fname)
         return hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest() != chash
     else:
         return False
@@ -225,9 +224,6 @@ def cache_makedirs(exec_hexdigest):
 def store_file_list_pickle(base_path, file_list):
     """Store input file list FILE_LIST in a file at BASE_PATH."""
 
-    for e in file_list:
-        pp(e[0])
-        assert(e[0] != b'/dev/pts/9')
     with open(base_path + '.pickle', 'wb') as out_file:
         pickle.dump(file_list, out_file, pickle.DEFAULT_PROTOCOL)
 
