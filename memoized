@@ -315,7 +315,6 @@ def dir_filenames_hash(dname, chash):
     sub_fnames = sorted(os.listdir(dname))
 
     show = True
-    print("dname:", dname)
     if show and dname == b'.':
         print(dname, "has contents")
         pp(sub_fnames)
