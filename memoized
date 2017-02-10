@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO Lookup source configuration from output artifact
+
 # TODO activate checking of `access` inputs
 
 # TODO warn about certain output paths?
