@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# TODO Reuse `watchman`:
+# - Home: https://facebook.github.io/watchman/
+# - Repo: https://github.com/facebook/watchman
+
 # TODO Lookup command and list of inputs from output artifact
 
 # TODO activate checking of `access` inputs
