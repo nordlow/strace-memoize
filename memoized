@@ -413,6 +413,11 @@ def update_cache(exec_state,
                         string=bytes.decode(fname)):
                 continue
 
+            # skip non-existing files
+            if not os.path.exists(fname):
+                print("warning: Non-existing file {}".format(fname))
+                continue
+
             # optionally skip system inputs
             if SKIP_SYSTEM_INPUTS and re.match(pattern=SYSTEM_FILE_RE,
                                                string=bytes.decode(fname)):
@@ -436,6 +441,7 @@ def update_cache(exec_state,
                              'open_wronly',
                              'open_rdwr']:
                 assert(not os.path.isdir(fname))
+
                 rw_list[fname] = (os.path.getmtime(fname),
                                   hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest())
                 if syscall in ['open_wronly',
