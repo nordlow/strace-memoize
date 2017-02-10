@@ -415,7 +415,7 @@ def update_cache(exec_state,
 
             # skip non-existing (transient) files
             if not os.path.exists(fname):
-                print("warning: Non-existing file {}".format(fname))
+                print("warning: Ignoring non-existing file {}".format(fname))
                 continue
 
             # optionally skip system inputs
