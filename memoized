@@ -90,7 +90,7 @@ INDENT_STEP = 2                 # number of spaces per indentation level
 include_system_deps = True
 
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc)')
-SKIP_FILE_RE = re.compile(r'/+(tmp|dev/urandom|dev/pts)')
+SKIP_FILE_RE = re.compile(r'/+(tmp|dev/urandom|dev/pts|dev/null)')
 
 ENCODING = 'utf-8'              # default text encoding
 
@@ -579,10 +579,12 @@ def process_strace_output_file(out_file):
                     fnames_all['open_wronly'].add(fname)
                 elif out_rest.startswith(b'O_RDWR|O_CREAT|O_TRUNC'): # write-only
                     fnames_all['open_wronly'].add(fname)
-                elif out_rest.startswith(b'O_RDWR|O_CREAT'): # read-write
+                elif out_rest.startswith(b'O_RDWR|O_CREAT'): # read-write. TODO respect O_CREAT?
+                    fnames_all['open_rdwr'].add(fname)
+                elif out_rest.startswith(b'O_RDWR'): # read-write
                     fnames_all['open_rdwr'].add(fname)
                 else:
-                    raise Exception('unknown out_rest' + str(out_rest))
+                    raise Exception('unknown out_rest ' + str(out_rest))
             elif syscall == b'access':
                 fnames_all['access'].add(fname)
             else:
