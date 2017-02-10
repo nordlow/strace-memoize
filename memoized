@@ -413,7 +413,7 @@ def update_cache(exec_state,
                         string=bytes.decode(fname)):
                 continue
 
-            # skip non-existing files
+            # skip non-existing (transient) files
             if not os.path.exists(fname):
                 print("warning: Non-existing file {}".format(fname))
                 continue
