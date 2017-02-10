@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Get current time before call to strace and the modtime for each input after and use together to remove potential artifacts
+
 # TODO Reuse `watchman`:
 # - Home: https://facebook.github.io/watchman/
 # - Repo: https://github.com/facebook/watchman
