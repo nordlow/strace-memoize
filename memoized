@@ -294,33 +294,50 @@ def git_status(dname):
     """Return result of Git status of directory named DNAME as list relative name
 and status string."""
 
+    entries = []
+
     # TODO functionize to git_status(dir) which return a list
     if os.access(dname, os.W_OK): # if directory is writable
         # outputs may be written to `dname` so we check Git status for all files in that directory
         try:
-            args = ('git', 'status', '-z', '--ignored',
-                    dname.decode(ENCODING))
-            # print("dname:", dname, "args:", args)
+            args = ('git', 'status', '-z', '--ignored', os.path.abspath(dname.decode(ENCODING)))
             output = subprocess.check_output(args=args,
                                              shell=False)
             for file_status in output.split(b'\x00'):
-                pass
+                if file_status:
+                    entries.append(tuple(file_status.split(b' ')))
             # print(file_status)
         except CalledProcessError:
             pass
 
+    return entries
 
 def dir_filenames_hash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = sorted(os.listdir(dname))
 
-    show = True
-    if show and dname == b'.':
-        print(dname, "has contents:")
-        pp(sub_fnames)
-        print()
+    # show = True
+    # if show and dname == b'.' and sub_fnames:
+    #     print(dname, "has contents:")
+    #     pp(sub_fnames)
+    #     print()
 
-    git_status(dname)
+    for status, sub_fname in git_status(dname):
+        # pp(sub_fnames)
+        # pp((status, sub_fname))
+
+        if status in [b'!!', b'??']:
+            try:
+                sub_fnames.remove(sub_fname)
+            except ValueError:
+                pass
+
+        if status == b'!!':
+            print('warning: Skipping Git-ignored file {} in input directory "{}"'
+                  .format(sub_fname, dname.decode(ENCODING)))
+        elif status == b'??':
+            print('warning: Skipping Git-unknown file {} in input directory "{}"'
+                  .format(sub_fname, dname.decode(ENCODING)))
 
     # hash number of files in dir named dname
     chash.update(str(len(sub_fnames)).encode(ENCODING))
