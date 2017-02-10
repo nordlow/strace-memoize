@@ -314,6 +314,13 @@ def dir_filenames_hash(dname, chash):
     """Hash dir contents of directory name DNAME as list of filenames into CHASH."""
     sub_fnames = sorted(os.listdir(dname))
 
+    show = True
+    print("dname:", dname)
+    if show and dname == b'.':
+        print(dname, "has contents")
+        pp(sub_fnames)
+        print()
+
     git_status(dname)
 
     # hash number of files in dir named dname
@@ -398,17 +405,12 @@ def update_cache(exec_state,
             elif syscall in ['open_rdonly',
                              'open_wronly',
                              'open_rdwr']:
-                if os.path.isdir(fname):
-                    dir_hash = hashlib.new(HASH_NAME)
-                    dir_filenames_hash(fname, dir_hash)
-                    rw_list[fname] = (os.path.getmtime(fname),
-                                      dir_hash.digest())
-                else:
-                    rw_list[fname] = (os.path.getmtime(fname),
-                                      hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest())
-                    if syscall in ['open_wronly',
-                                   'open_rdwr']:
-                        wr_list.add(fname)
+                assert(not os.path.isdir(fname))
+                rw_list[fname] = (os.path.getmtime(fname),
+                                  hashlib.new(HASH_NAME, open(fname, 'rb').read()).digest())
+                if syscall in ['open_wronly',
+                               'open_rdwr']:
+                    wr_list.add(fname)
             elif syscall in ['access']:
                 pass
             else:
