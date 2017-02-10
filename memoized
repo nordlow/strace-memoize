@@ -300,10 +300,14 @@ and status string."""
     if os.access(dname, os.W_OK): # if directory is writable
         # outputs may be written to `dname` so we check Git status for all files in that directory
         try:
-            args = ('git', 'status', '-z', '--ignored', os.path.abspath(dname.decode(ENCODING)))
+            # http://stackoverflow.com/questions/42158080/git-status-in-machine-readable-format-with-paths-relative-to-current-directory
+
+            args = ('git', 'status', '-s', '--ignored', dname.decode(ENCODING))
+            git_status_separator = b'\n' # either b'\n' or b'\x00'
+
             output = subprocess.check_output(args=args,
                                              shell=False)
-            for file_status in output.split(b'\x00'):
+            for file_status in output.split(git_status_separator):
                 if file_status:
                     entries.append(tuple(file_status.split(b' ')))
         except CalledProcessError:
