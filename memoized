@@ -366,7 +366,7 @@ def try_load_outputs_path_from_cache(cache_dir_path):
                                                   input_mtime,
                                                   input_chash):
                     if True:
-                        print("Cannot load from cache because input state of",
+                        print("warning: Cannot load from cache because input state of",
                               input_fname.decode(ENCODING),
                               "has changed from",
                               input_mtime, binascii.hexlify(input_chash))
@@ -513,12 +513,10 @@ def process_strace_output_file(out_file):
         pid_, out_rest = out_line.split(None, 1)
 
         pid = int(pid_) # decode PID integer
-        # print(pid)
 
         try:
             syscall, out_rest = out_rest.split(b'(', 1)
             syscall_s = bytes.decode(syscall)
-            # print(syscall_s)
 
             fname, out_rest = out_rest.split(b', ', 1)
             fname = os.path.normpath(fname[1:-1])
@@ -554,7 +552,6 @@ def process_strace_output_file(out_file):
                 fnames_all['statfs'].add(fname)
             elif syscall == b'openat':
                 fnames_all['openat'].add(fname)
-                # print(fname, out_rest)
             elif syscall == b'open':
                 # TODO split out_rest at ending ')' and pattern match against all bitfields O_....
                 if (out_rest.startswith(b'O_RDONLY|O_DIRECTORY') or
@@ -574,7 +571,7 @@ def process_strace_output_file(out_file):
             elif syscall == b'access':
                 fnames_all['access'].add(fname)
             else:
-                print('Handle system call ' + syscall_s)
+                print('warning: Handle system call ' + syscall_s)
 
         except ValueError:
             pass
@@ -629,7 +626,7 @@ def try_restore_outputs_from_cache(cached_outputs_path):
                                 print('info: Fetched {} from cache'.format(fname.decode(ENCODING)))
                             shutil.copyfileobj(artifact_file, output_file)
                 except:
-                    print("Failed to copy artifact {} to {}".format(artifact_path, fname))
+                    print("warning: Failed to copy artifact {} to {}".format(artifact_path, fname))
                     cache_fetch_ok = False
                     break
     return cache_fetch_ok
@@ -672,7 +669,6 @@ def memoized_run(args,
         sys_calls_flags = ['-e', 'trace=' +
                            ','.join(SYS_CALLS + SYS_CALLS_AT)]
         strace_cmd = ['strace'] + strace_std_flags + outfile_flags + sys_calls_flags + args
-        # print('strace_cmd:', ' '.join(strace_cmd))
 
         ret = subprocess.run(args=strace_cmd, shell=False)
 
