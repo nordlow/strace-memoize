@@ -299,7 +299,8 @@ def dir_filenames_hash(dname, chash):
     #     print()
 
     # TODO functionize to git_status(dir) which return a list
-    if os.access(dname, os.W_OK):
+    if os.access(dname, os.W_OK): # if directory is writable
+        # outputs may be written to `dname` so we check Git status for all files in that directory
         try:
             args = ('git', 'status', '-z', '--ignored',
                     dname.decode(ENCODING))
