@@ -316,7 +316,7 @@ def dir_filenames_hash(dname, chash):
 
     show = True
     if show and dname == b'.':
-        print(dname, "has contents")
+        print(dname, "has contents:")
         pp(sub_fnames)
         print()
 
