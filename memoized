@@ -531,6 +531,8 @@ def process_strace_output_file(out_file):
         if b'ENOENT' in out_line: # skip failing calls
             continue
 
+        # print(out_line)
+
         pid_, out_rest = out_line.split(None, 1)
 
         pid = int(pid_) # decode PID integer
