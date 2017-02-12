@@ -29,16 +29,15 @@
 
 - [ ] Lookup command and list of inputs from output artifact
 
-- [ ] activate checking of `access` inputs
+- [ ] Activate checking of `access` inputs
 
-- [ ] warn about certain output paths?
-- [ ] warn when inputs and outputs
+- [ ] Warn about certain output paths?
+- [ ] Warn when inputs and outputs
 
-- [ ] save and load
-- [ ]-zero exist codes in calls to sys.exit()
-- [ ]
+- [ ] Save and load
+- [ ] Zero exist codes in calls to sys.exit()
 
-- [ ] how to handle stat mtime on input dirs where output files are written?
+- [ ] How to handle stat mtime on input dirs where output files are written?
 
 - [ ] Update modification times in cache if they are same as written file
 
@@ -46,8 +45,7 @@
 
 - [ ] Detect file system race conditions in child processes
 
-- [ ] ask on StackExchange if there's a flag to strace to not show failing
-- [ ] calls
+- [ ] Ask on StackExchange if there's a flag to strace to not show failing calls
 
 - [ ] Ask Claes Wallin how to fingerprint the Linux kernel version or distribution
 - [ ] /proc/version
