@@ -6,6 +6,10 @@
 
 ## TODO
 
+- [ ] Use `watchman`:
+- [ ] https://facebook.github.io/watchman/
+- [ ] https://github.com/facebook/watchman
+
 - [ ] Process tree and IO visualization (currently in YAML)
 - [ ] Port to [D](http://dlang.org/) for better performance.
 - [ ] Test on Linux for Windows 10 (does it support strace and inotify?)
@@ -22,10 +26,6 @@
 - [ ] use to more safely remove written files in opened (potential input)
 - [ ] Reuse watchman here to faster discard directories that have are
 - [ ] but whose content haven't changed.
-
-- [ ] Reuse `watchman`:
-- [ ] https://facebook.github.io/watchman/
-- [ ] https://github.com/facebook/watchman
 
 - [ ] Lookup command and list of inputs from output artifact
 
