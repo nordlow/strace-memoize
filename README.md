@@ -1,4 +1,4 @@
-# Enhanced memoize.py
+# Persistent command line memoizer
 
 ## Improvememnts
 - Python 3
