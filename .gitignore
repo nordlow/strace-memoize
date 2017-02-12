@@ -5,3 +5,4 @@ main-compile.strace
 *.lst
 __pycache__
 a.out
+README.html
