@@ -32,7 +32,7 @@ INDENT_STEP = 2                 # number of spaces per indentation level
 include_system_deps = True
 
 SYSTEM_FILE_RE = re.compile(r'/+(usr|lib|lib64|dev|proc|etc)')
-SKIP_FILE_RE = re.compile(r'/+(tmp|dev/urandom|dev/pts|dev/null)')
+SKIP_FILE_RE = re.compile(r'/+(tmp|dev/urandom|dev/pts|dev/null|proc/self/maps)')
 
 ENCODING = 'utf-8'              # default text encoding
 
@@ -501,9 +501,11 @@ def process_strace_output_file(out_file):
 
         fname = normalize_cwdrelpath(fname)
 
-        if pid in pid_cwd and pid_cwd[pid] is not None and not os.path.isabs(fname): #
+        if pid in pid_cwd and pid_cwd[pid] is not None and not os.path.isabs(fname):
             # make it an absolute path
+            print("FROM:", fname)
             fname = os.path.join(pid_cwd[pid], fname)
+            print("TO:", fname)
 
         # in decreasing probability
         if syscall == b'execve':
