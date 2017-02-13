@@ -20,7 +20,7 @@ from pprint import pprint as pp # convenient shorthand
 # show results
 OPT_VERBOSE = True # False, True, 'raw'
 
-SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs', 'chdir'# , 'access'
+SYS_CALLS = ['execve', 'open', 'openat', 'stat', 'stat64', 'statfs', 'getcwd', 'chdir'# , 'access'
 ]
 SYS_CALLS_AT = ['openat']       # Linux
 
@@ -44,7 +44,7 @@ INPUTS_FILENAME = 'inputs'
 OUTPUTS_FILENAME = 'outputs'
 INPUTS_FILE_CONTENT_HASH_PREFIX = INPUTS_FILENAME + '_' + HASH_NAME.upper() + '-'
 
-MAX_STRACE_STRING_LENGTH = 4096
+MAX_STRACE_STRING_LENGTH = 8192
 
 SEPARATOR = b'	'               # tab
 
@@ -506,16 +506,24 @@ def process_strace_output_file(out_file):
 
         # in decreasing probability
         if syscall == b'execve':
+
             # get args
             _args, out_rest = out_rest.split(b'], [', 1)
             argv = eval(_args[1:]) # tuple of strings
 
             # get environment
             try:
-                _env, out_rest = out_rest.split(b']) = ', 1) # TODO prevent _env from being decoded
+                _env, out_rest = out_rest.split(b']) = ', 1)
             except ValueError:
-                continue
-            env_tuple = eval(_env) # tuple of strings containing ENV_VAR=VALE
+                # try again for unfinished execve's
+                try:
+                    _env, out_rest = out_rest.split(b'] <unfinished ...>\n', 1)
+                except ValueError:
+                    continue
+
+            # tuple of strings containing ENV_VAR=VALUE
+            # TODO prevent _env from being decoded
+            env_tuple = eval(_env)
 
             # convert tuple of strings to map from key to value
             env = { k.encode(ENCODING):v.encode(ENCODING)
@@ -562,7 +570,9 @@ def process_strace_output_file(out_file):
         elif syscall == b'access':
             fnames_all['access'].add(fname)
         elif syscall == b'getcwd':
-            assert(pid_cwd[pid] == fname) # return path should equal what we already know
+            pp(out_line)
+            if pid_cwd[pid] != None and fname != b'.': # if not first execution
+                assert(pid_cwd[pid] == fname) # return path should equal what we already know
         elif syscall == b'chdir':
             print("FROM:", fname)
             if os.path.isabs(fname):
