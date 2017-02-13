@@ -453,7 +453,7 @@ def normalize_cwdrelpath(path):
 
 def process_strace_output_file(out_file):
 
-    pid_to_cwd = {}                    # int pid => cwd (current working directory)
+    pid_cwd = {}                    # int pid => cwd (current working directory)
 
     first_execve_state = None
     trace = []                  # trace tree
@@ -497,6 +497,9 @@ def process_strace_output_file(out_file):
             # if syscall != b'execve':
             #     pp((syscall, fname, out_rest))
 
+            if pid in pwd_cwd and not os.path.isabs(fname):
+                fname = os.path.join(pwd, fname)
+
             # in decreasing probability
             if syscall == b'execve':
                 # get args
@@ -505,9 +508,16 @@ def process_strace_output_file(out_file):
 
                 # get environment
                 _env, out_rest = out_rest.split(b']) = ', 1)
-                env = eval(_env) # tuple of strings containing ENV_VAR=VALE
-                # pwd = env["PWD"]
-                # TODO pid_to_cwd[pid] = pwd
+                env_tuple = eval(_env) # tuple of strings containing ENV_VAR=VALE
+
+                # convert tuple of strings to map from key to value
+                env = { k:v for k, v in (e.split("=", 1) for e in env_tuple)}
+
+                # store current working directory of environment
+                try:
+                    pid_cwd[pid] = env['PWD']
+                except KeyError:
+                    pid_cwd[pid] = None
 
                 # store and fingerprint
                 exec_state = (syscall, fname, argv, env)
