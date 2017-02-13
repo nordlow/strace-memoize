@@ -483,94 +483,97 @@ def process_strace_output_file(out_file):
 
         try:
             syscall, out_rest = out_rest.split(b'(', 1)
-            syscall_s = bytes.decode(syscall)
-
-            fname, out_rest = out_rest.split(b', ', 1)
-            if (fname == 'backend'):
-                pp(out_rest)
-                f
-            fname = os.path.normpath(fname[1:-1])
-
-            if (fname.startswith(b'//usr') or
-                fname.startswith(b'//lib')):
-                fname = fname[1:] # skip first slash for now. TODO correct?
-
-            fname = normalize_cwdrelpath(fname)
-
-            if pid in pid_cwd and pid_cwd[pid] is not None and not os.path.isabs(fname): #
-                # make it an absolute path
-                fname = os.path.join(pid_cwd[pid], fname)
-
-            # in decreasing probability
-            if syscall == b'execve':
-                # get args
-                _args, out_rest = out_rest.split(b'], [', 1)
-                argv = eval(_args[1:]) # tuple of strings
-
-                # get environment
-                _env, out_rest = out_rest.split(b']) = ', 1) # TODO prevent _env from being decoded
-                env_tuple = eval(_env) # tuple of strings containing ENV_VAR=VALE
-
-                # convert tuple of strings to map from key to value
-                env = { k.encode(ENCODING):v.encode(ENCODING)
-                        for k, v in
-                        (e.split("=", 1) for
-                         e in env_tuple)}
-
-                # store current working directory of environment
-                try:
-                    pid_cwd[pid] = env['PWD']
-                except KeyError:
-                    pid_cwd[pid] = None
-
-                # store and fingerprint
-                exec_state = (syscall, fname, argv, env)
-                if first_execve_state is None:
-                    first_execve_state = exec_state
-                    trace.append(exec_state)
-
-            elif syscall == b'stat':
-                fnames_all['stat'].add(fname)
-            elif syscall == b'statfs':
-                fnames_all['statfs'].add(fname)
-            elif syscall == b'openat':
-                fnames_all['openat'].add(fname)
-            elif syscall == b'open':
-                # TODO split out_rest at ending ')' and pattern match against all bitfields O_....
-                if (out_rest.startswith(b'O_RDONLY|O_DIRECTORY') or
-                    out_rest.startswith(b'O_RDONLY|O_NONBLOCK|O_DIRECTORY')): # read directory contents
-                    fnames_all['open_dir_rdonly'].add(fname)
-                elif out_rest.startswith(b'O_RDONLY'): # read-only
-                    fnames_all['open_rdonly'].add(fname)
-                elif out_rest.startswith(b'O_WRONLY'):
-                    # write-only create into new file
-                    fnames_all['open_wronly'].add(fname)
-                elif out_rest.startswith(b'O_RDWR|O_CREAT|O_TRUNC'): # write-only
-                    fnames_all['open_wronly'].add(fname)
-                elif out_rest.startswith(b'O_RDWR|O_CREAT'): # read-write. TODO respect O_CREAT?
-                    fnames_all['open_rdwr'].add(fname)
-                elif out_rest.startswith(b'O_RDWR'): # read-write
-                    fnames_all['open_rdwr'].add(fname)
-                else:
-                    raise Exception('unknown out_rest ' + str(out_rest))
-            elif syscall == b'access':
-                fnames_all['access'].add(fname)
-            elif syscall == b'getcwd':
-                assert(pid_cwd[pid] == fname) # return path should equal what we already know
-            elif syscall == b'chdir':
-                print("FROM:", fname)
-                if os.path.isabs(fname):
-                    fname = fname
-                else:
-                    fname = os.path.normpath(os.path.join(pid_cwd[pid], fname))
-                print("TO:", fname)
-            elif syscall.startswith(b'<... stat resumed>'): # TODO what does this mean?
-                pass
-            else:
-                print('warning: Handle system call ' + syscall_s)
-
         except ValueError:
+            continue
+        syscall_s = bytes.decode(syscall)
+
+        try:
+            fname, out_rest = out_rest.split(b', ', 1)
+        except ValueError:
+            continue
+        fname = os.path.normpath(fname[1:-1])
+
+        if (fname.startswith(b'//usr') or
+            fname.startswith(b'//lib')):
+            fname = fname[1:] # skip first slash for now. TODO correct?
+
+        fname = normalize_cwdrelpath(fname)
+
+        if pid in pid_cwd and pid_cwd[pid] is not None and not os.path.isabs(fname): #
+            # make it an absolute path
+            fname = os.path.join(pid_cwd[pid], fname)
+
+        # in decreasing probability
+        if syscall == b'execve':
+            # get args
+            _args, out_rest = out_rest.split(b'], [', 1)
+            argv = eval(_args[1:]) # tuple of strings
+
+            # get environment
+            try:
+                _env, out_rest = out_rest.split(b']) = ', 1) # TODO prevent _env from being decoded
+            except ValueError:
+                continue
+            env_tuple = eval(_env) # tuple of strings containing ENV_VAR=VALE
+
+            # convert tuple of strings to map from key to value
+            env = { k.encode(ENCODING):v.encode(ENCODING)
+                    for k, v in
+                    (e.split("=", 1) for
+                     e in env_tuple)}
+
+            # store current working directory of environment
+            try:
+                pid_cwd[pid] = env['PWD']
+            except KeyError:
+                pid_cwd[pid] = None
+
+            # store and fingerprint
+            exec_state = (syscall, fname, argv, env)
+            if first_execve_state is None:
+                first_execve_state = exec_state
+                trace.append(exec_state)
+
+        elif syscall == b'stat':
+            fnames_all['stat'].add(fname)
+        elif syscall == b'statfs':
+            fnames_all['statfs'].add(fname)
+        elif syscall == b'openat':
+            fnames_all['openat'].add(fname)
+        elif syscall == b'open':
+            # TODO split out_rest at ending ')' and pattern match against all bitfields O_....
+            if (out_rest.startswith(b'O_RDONLY|O_DIRECTORY') or
+                out_rest.startswith(b'O_RDONLY|O_NONBLOCK|O_DIRECTORY')): # read directory contents
+                fnames_all['open_dir_rdonly'].add(fname)
+            elif out_rest.startswith(b'O_RDONLY'): # read-only
+                fnames_all['open_rdonly'].add(fname)
+            elif out_rest.startswith(b'O_WRONLY'):
+                # write-only create into new file
+                fnames_all['open_wronly'].add(fname)
+            elif out_rest.startswith(b'O_RDWR|O_CREAT|O_TRUNC'): # write-only
+                fnames_all['open_wronly'].add(fname)
+            elif out_rest.startswith(b'O_RDWR|O_CREAT'): # read-write. TODO respect O_CREAT?
+                fnames_all['open_rdwr'].add(fname)
+            elif out_rest.startswith(b'O_RDWR'): # read-write
+                fnames_all['open_rdwr'].add(fname)
+            else:
+                raise Exception('unknown out_rest ' + str(out_rest))
+        elif syscall == b'access':
+            fnames_all['access'].add(fname)
+        elif syscall == b'getcwd':
+            assert(pid_cwd[pid] == fname) # return path should equal what we already know
+        elif syscall == b'chdir':
+            print("FROM:", fname)
+            if os.path.isabs(fname):
+                fname = fname
+            else:
+                fname = os.path.normpath(os.path.join(pid_cwd[pid], fname))
+            print("TO:", fname)
+        elif syscall.startswith(b'<... stat resumed>'): # TODO what does this mean?
             pass
+        else:
+            print('warning: Handle system call ' + syscall_s)
+
 
     return (first_execve_state, trace, fnames_all)
 
