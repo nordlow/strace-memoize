@@ -501,9 +501,9 @@ def process_strace_output_file(out_file):
 
         fname = normalize_cwdrelpath(fname)
 
-        if pid in pid_cwd and pid_cwd[pid] is not None and not os.path.isabs(fname):
+        if pid in pid_cwd and not os.path.isabs(fname):
             # make it an absolute path
-            fname = os.path.join(pid_cwd[pid], fname)
+            fname = os.path.normpath(os.path.join(pid_cwd[pid], fname))
 
         # in decreasing probability
         if syscall == b'execve':
@@ -534,10 +534,9 @@ def process_strace_output_file(out_file):
 
             # store current working directory of environment
             try:
-                pid_cwd[pid] = env[b'PWD']
+                pid_cwd[pid] = os.path.normpath(env[b'PWD'])
             except KeyError:
-                print('HERE')
-                pid_cwd[pid] = None
+                pass
 
             # store and fingerprint
             exec_state = (syscall, fname, argv, env)
@@ -572,8 +571,9 @@ def process_strace_output_file(out_file):
         elif syscall == b'access':
             fnames_all['access'].add(fname)
         elif syscall == b'getcwd':
-            if pid_cwd[pid] != None and fname != b'.': # if not first execution
-                assert(pid_cwd[pid] == fname) # return path should equal what we already know
+            pass
+            # if pid_cwd[pid] != None and fname != b'.': # if not first execution
+            #     assert(pid_cwd[pid] == fname) # return path should equal what we already know
         elif syscall == b'chdir':
             print("FROM:", fname)
             if os.path.isabs(fname):
