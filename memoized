@@ -486,6 +486,9 @@ def process_strace_output_file(out_file):
             syscall_s = bytes.decode(syscall)
 
             fname, out_rest = out_rest.split(b', ', 1)
+            if (fname == 'backend'):
+                pp(out_rest)
+                f
             fname = os.path.normpath(fname[1:-1])
 
             if (fname.startswith(b'//usr') or
@@ -494,11 +497,9 @@ def process_strace_output_file(out_file):
 
             fname = normalize_cwdrelpath(fname)
 
-            # if syscall != b'execve':
-            #     pp((syscall, fname, out_rest))
-
-            if pid in pwd_cwd and not os.path.isabs(fname):
-                fname = os.path.join(pwd, fname)
+            if pid in pid_cwd and pid_cwd[pid] is not None and not os.path.isabs(fname): #
+                # make it an absolute path
+                fname = os.path.join(pid_cwd[pid], fname)
 
             # in decreasing probability
             if syscall == b'execve':
@@ -507,11 +508,14 @@ def process_strace_output_file(out_file):
                 argv = eval(_args[1:]) # tuple of strings
 
                 # get environment
-                _env, out_rest = out_rest.split(b']) = ', 1)
+                _env, out_rest = out_rest.split(b']) = ', 1) # TODO prevent _env from being decoded
                 env_tuple = eval(_env) # tuple of strings containing ENV_VAR=VALE
 
                 # convert tuple of strings to map from key to value
-                env = { k:v for k, v in (e.split("=", 1) for e in env_tuple)}
+                env = { k.encode(ENCODING):v.encode(ENCODING)
+                        for k, v in
+                        (e.split("=", 1) for
+                         e in env_tuple)}
 
                 # store current working directory of environment
                 try:
@@ -552,8 +556,16 @@ def process_strace_output_file(out_file):
             elif syscall == b'access':
                 fnames_all['access'].add(fname)
             elif syscall == b'getcwd':
-                fnames_all['getcwd'].add(fname)
-                pp(fname)
+                assert(pid_cwd[pid] == fname) # return path should equal what we already know
+            elif syscall == b'chdir':
+                print("FROM:", fname)
+                if os.path.isabs(fname):
+                    fname = fname
+                else:
+                    fname = os.path.normpath(os.path.join(pid_cwd[pid], fname))
+                print("TO:", fname)
+            elif syscall.startswith(b'<... stat resumed>'): # TODO what does this mean?
+                pass
             else:
                 print('warning: Handle system call ' + syscall_s)
 
