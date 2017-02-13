@@ -501,11 +501,15 @@ def process_strace_output_file(out_file):
 
         fname = normalize_cwdrelpath(fname)
 
+        try:
+            if pid_cwd[pid] != None:
+                pp((pid, pid_cwd[pid], fname))
+        except KeyError:
+            pass
+
         if pid in pid_cwd and pid_cwd[pid] is not None and not os.path.isabs(fname):
             # make it an absolute path
-            print("FROM:", fname)
             fname = os.path.join(pid_cwd[pid], fname)
-            print("TO:", fname)
 
         # in decreasing probability
         if syscall == b'execve':
@@ -536,8 +540,9 @@ def process_strace_output_file(out_file):
 
             # store current working directory of environment
             try:
-                pid_cwd[pid] = env['PWD']
+                pid_cwd[pid] = env[b'PWD']
             except KeyError:
+                print('HERE')
                 pid_cwd[pid] = None
 
             # store and fingerprint
