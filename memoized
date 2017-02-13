@@ -453,6 +453,8 @@ def normalize_cwdrelpath(path):
 
 def process_strace_output_file(out_file):
 
+    pid_to_cwd = {}                    # int pid => cwd (current working directory)
+
     first_execve_state = None
     trace = []                  # trace tree
 
@@ -473,7 +475,7 @@ def process_strace_output_file(out_file):
         if b'ENOENT' in out_line: # skip failing calls
             continue
 
-        # print(out_line)
+        # print("out_line:", out_line)
 
         pid_, out_rest = out_line.split(None, 1)
 
@@ -504,6 +506,8 @@ def process_strace_output_file(out_file):
                 # get environment
                 _env, out_rest = out_rest.split(b']) = ', 1)
                 env = eval(_env) # tuple of strings containing ENV_VAR=VALE
+                # pwd = env["PWD"]
+                # TODO pid_to_cwd[pid] = pwd
 
                 # store and fingerprint
                 exec_state = (syscall, fname, argv, env)
@@ -537,6 +541,9 @@ def process_strace_output_file(out_file):
                     raise Exception('unknown out_rest ' + str(out_rest))
             elif syscall == b'access':
                 fnames_all['access'].add(fname)
+            elif syscall == b'getcwd':
+                fnames_all['getcwd'].add(fname)
+                pp(fname)
             else:
                 print('warning: Handle system call ' + syscall_s)
 
