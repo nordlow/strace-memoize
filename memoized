@@ -570,7 +570,6 @@ def process_strace_output_file(out_file):
         elif syscall == b'access':
             fnames_all['access'].add(fname)
         elif syscall == b'getcwd':
-            pp(out_line)
             if pid_cwd[pid] != None and fname != b'.': # if not first execution
                 assert(pid_cwd[pid] == fname) # return path should equal what we already know
         elif syscall == b'chdir':
